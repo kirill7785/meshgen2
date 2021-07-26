@@ -1,5 +1,5 @@
 # meshgen2
-[!alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9A%D0%BE%D0%BB%D0%B5%D0%BD%D0%BE%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BD%D1%8B%D0%B9%20%D1%81%D0%BC%D0%B5%D1%81%D0%B8%D1%82%D0%B5%D0%BB%D1%8C.png)
+![alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9A%D0%BE%D0%BB%D0%B5%D0%BD%D0%BE%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BD%D1%8B%D0%B9%20%D1%81%D0%BC%D0%B5%D1%81%D0%B8%D1%82%D0%B5%D0%BB%D1%8C.png)
 0 33 33
 0 3 3 0
 1 1 0 16 8 0.0 0.0 32.0 16.0 -1 -1 0 1000.0 4216.0 0.667
@@ -9,7 +9,7 @@
 2 1 4 8 8 32.0 32.0 16.0 -50.07 32.0 -39.93 0 1000.0 4216.0 0.667
 2 1 5 8 8 32.0 32.0 16.0 -39.93 32.0 0.0 0 1000.0 4216.0 0.667
 Коленообразный смеситель
-[!alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9E%D0%B1%D1%82%D0%B5%D0%BA%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%86%D0%B8%D0%BB%D0%B8%D0%BD%D0%B4%D1%80%D0%B0%20.png)
+![alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9E%D0%B1%D1%82%D0%B5%D0%BA%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%86%D0%B8%D0%BB%D0%B8%D0%BD%D0%B4%D1%80%D0%B0%20.png)
 0 33 33
 0 8 4 0
 1 1 0 20 15 -5.0 -5.0 -3.0 -3.0 -1 -1 0 1.0 1.0 1.0
@@ -25,7 +25,7 @@
 2 1 10 30 30 0.0 0.0 1.0 45.0 3.0 135.0 2 1.0 1.0 1.0
 2 1 11 30 30 0.0 0.0 1.0 135.0 -3.0 225.0 2 1.0 1.0 1.0
 Обтекание цилиндра.
-[!alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9A%D0%BB%D0%B5%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BB%D0%B8%D1%81%D1%82%20.png)
+![alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%9A%D0%BB%D0%B5%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BB%D0%B8%D1%81%D1%82%20.png)
 0 33 33
 0 0 0 5
 3 1 1 6 6 -4.0 -3.0 -1.0 -2.0 0.0 0.0 -3.0 -1.0 1.0 1.0 1.0
@@ -34,7 +34,7 @@
 3 1 4 6 6 0.0 0.0 2.0 2.0 1.0 5.0 -2.0 2.0 1.0 1.0 1.0
 3 1 5 6 6 -2.0 2.0 -5.0 1.0 -3.0 -1.0 0.0 0.0 1.0 1.0 1.0
 Кленовый лист.
-[!alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%95%D0%B4%D0%B8%D0%BD%D0%B8%D1%87%D0%BD%D0%B0%D1%8F%20%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%20.png)
+![alt_text](https://github.com/kirill7785/meshgen2/blob/main/pic/%D0%95%D0%B4%D0%B8%D0%BD%D0%B8%D1%87%D0%BD%D0%B0%D1%8F%20%D0%BE%D0%BA%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D1%8C%20.png)
 0 33 33
 0 1 4 0
 1 1 1 10 10 -0.2 -0.2 0.2 0.2 -1 -1 0 1.0 1.0 1.0
