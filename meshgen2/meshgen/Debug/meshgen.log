@@ -1,0 +1,14 @@
+﻿Построение начато 13.03.2014 14:59:55.
+     1>Проект "C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\meshgen\meshgen.vcxproj" в узле 2 (целевые объекты Build).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\meshgen.pch" /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt meshgen.cpp
+         meshgen.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\Debug\meshgen.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\Debug\meshgen.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\Debug\meshgen.lib" /MACHINE:X86 Debug\meshgen.obj
+         Debug\stdafx.obj
+         meshgen.vcxproj -> C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\Debug\meshgen.exe
+     1>Построение проекта "C:\Users\Kirill\Documents\Visual Studio 2012\Projects\meshgen\meshgen\meshgen.vcxproj" завершено (целевые объекты Build).
+
+Построение успешно завершено.
+
+Затраченное время: 00:00:00.50

@@ -1,0 +1,13 @@
+﻿  stdafx.cpp
+  meshgen.cpp
+C:\Users\ivanov local\Desktop\CFD\meshgen2\meshgen\AliceDataDubl.cpp(337,14): warning C4305: инициализация: усечение из "double" в "float"
+C:\Users\ivanov local\Desktop\CFD\meshgen2\meshgen\meshgen.cpp(226,35): warning C4273: fmin: несовместимое связывание dll
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\corecrt_math.h(508,47): message : см. предыдущее определение "fmin"
+C:\Users\ivanov local\Desktop\CFD\meshgen2\meshgen\meshgen.cpp(233,35): warning C4273: fmax: несовместимое связывание dll
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\corecrt_math.h(507,47): message : см. предыдущее определение "fmax"
+     Создается библиотека C:\Users\ivanov local\Desktop\CFD\meshgen2\Release\meshgen.lib и объект C:\Users\ivanov local\Desktop\CFD\meshgen2\Release\meshgen.exp
+  Создание кода
+  Previous IPDB not found, fall back to full compilation.
+  All 24 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Создание кода завершено
+  meshgen.vcxproj -> C:\Users\ivanov local\Desktop\CFD\meshgen2\Release\meshgen.exe
