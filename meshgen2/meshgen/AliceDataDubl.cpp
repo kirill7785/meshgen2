@@ -1,94 +1,94 @@
-// В файле AliceDataDubl.cpp содержатся данные и функции
-// уже реализованные в различных модулях программы AliceFlow.
-// Поскольку сеточный генератор это самостооятельный проект то здесь необходимо продублировать данные и методы.
-// Вбудущем при интеграцции сеточного генератора в программу AliceFlow данный файл включать ненадо.
+// Р’ С„Р°Р№Р»Рµ AliceDataDubl.cpp СЃРѕРґРµСЂР¶Р°С‚СЃСЏ РґР°РЅРЅС‹Рµ Рё С„СѓРЅРєС†РёРё
+// СѓР¶Рµ СЂРµР°Р»РёР·РѕРІР°РЅРЅС‹Рµ РІ СЂР°Р·Р»РёС‡РЅС‹С… РјРѕРґСѓР»СЏС… РїСЂРѕРіСЂР°РјРјС‹ AliceFlow.
+// РџРѕСЃРєРѕР»СЊРєСѓ СЃРµС‚РѕС‡РЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ СЌС‚Рѕ СЃР°РјРѕСЃС‚РѕРѕСЏС‚РµР»СЊРЅС‹Р№ РїСЂРѕРµРєС‚ С‚Рѕ Р·РґРµСЃСЊ РЅРµРѕР±С…РѕРґРёРјРѕ РїСЂРѕРґСѓР±Р»РёСЂРѕРІР°С‚СЊ РґР°РЅРЅС‹Рµ Рё РјРµС‚РѕРґС‹.
+// Р’Р±СѓРґСѓС‰РµРј РїСЂРё РёРЅС‚РµРіСЂР°С†С†РёРё СЃРµС‚РѕС‡РЅРѕРіРѕ РіРµРЅРµСЂР°С‚РѕСЂР° РІ РїСЂРѕРіСЂР°РјРјСѓ AliceFlow РґР°РЅРЅС‹Р№ С„Р°Р№Р» РІРєР»СЋС‡Р°С‚СЊ РЅРµРЅР°РґРѕ.
 
 
 
 #define Real double
 #define Logical bool
 
-// из файла AliceData.h
+// РёР· С„Р°Р№Р»Р° AliceData.h
 // begin
 
-#define TEMP 0 // температура
-#define VX 1 // горизонтальная скорость
-#define VY 2 // вертикальная скорость
-#define VAR_COUNT 3 // количество функций под которые требуется выделить память.
+#define TEMP 0 // С‚РµРјРїРµСЂР°С‚СѓСЂР°
+#define VX 1 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
+#define VY 2 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
+#define VAR_COUNT 3 // РєРѕР»РёС‡РµСЃС‚РІРѕ С„СѓРЅРєС†РёР№ РїРѕРґ РєРѕС‚РѕСЂС‹Рµ С‚СЂРµР±СѓРµС‚СЃСЏ РІС‹РґРµР»РёС‚СЊ РїР°РјСЏС‚СЊ.
 
 typedef struct TMYTASK_DATA {
-	int maxnod; // максимальный номер узла (размерность массива)
-    int maxelm; // максимально допустимое число элементов (элементов меньше чем узлов)
-    // по умолчанию элементы треугольники. Тип элемента определяется при считывании файла с сеткой.
-    int nve; // число узловых переменных элемента (программа работает только для квадратных).
+	int maxnod; // РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ РЅРѕРјРµСЂ СѓР·Р»Р° (СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°СЃСЃРёРІР°)
+    int maxelm; // РјР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ (СЌР»РµРјРµРЅС‚РѕРІ РјРµРЅСЊС€Рµ С‡РµРј СѓР·Р»РѕРІ)
+    // РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЌР»РµРјРµРЅС‚С‹ С‚СЂРµСѓРіРѕР»СЊРЅРёРєРё. РўРёРї СЌР»РµРјРµРЅС‚Р° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ РїСЂРё СЃС‡РёС‚С‹РІР°РЅРёРё С„Р°Р№Р»Р° СЃ СЃРµС‚РєРѕР№.
+    int nve; // С‡РёСЃР»Рѕ СѓР·Р»РѕРІС‹С… РїРµСЂРµРјРµРЅРЅС‹С… СЌР»РµРјРµРЅС‚Р° (РїСЂРѕРіСЂР°РјРјР° СЂР°Р±РѕС‚Р°РµС‚ С‚РѕР»СЊРєРѕ РґР»СЏ РєРІР°РґСЂР°С‚РЅС‹С…).
 
-    int **nvtx; // список узлов для каждого элемента
-    // динамическое выделение памяти не используется
-    Real *x, *y; // узловые координаты
-    //int ***nvtxMG; // список узлов для каждого элемента для нескольких уровней вложенности.
+    int **nvtx; // СЃРїРёСЃРѕРє СѓР·Р»РѕРІ РґР»СЏ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
+    // РґРёРЅР°РјРёС‡РµСЃРєРѕРµ РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+    Real *x, *y; // СѓР·Р»РѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹
+    //int ***nvtxMG; // СЃРїРёСЃРѕРє СѓР·Р»РѕРІ РґР»СЏ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РґР»СЏ РЅРµСЃРєРѕР»СЊРєРёС… СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё.
 
-    Logical **constr; // истина для фиксированных потенциалов (лог. переменная)
-    Real **potent; // массив узловых потенциалов
-    //Real *rthdsd; // правая часть системы уравнений
+    Logical **constr; // РёСЃС‚РёРЅР° РґР»СЏ С„РёРєСЃРёСЂРѕРІР°РЅРЅС‹С… РїРѕС‚РµРЅС†РёР°Р»РѕРІ (Р»РѕРі. РїРµСЂРµРјРµРЅРЅР°СЏ)
+    Real **potent; // РјР°СЃСЃРёРІ СѓР·Р»РѕРІС‹С… РїРѕС‚РµРЅС†РёР°Р»РѕРІ
+    //Real *rthdsd; // РїСЂР°РІР°СЏ С‡Р°СЃС‚СЊ СЃРёСЃС‚РµРјС‹ СѓСЂР°РІРЅРµРЅРёР№
 
-    // свойства материалов
+    // СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»РѕРІ
     Real *rho, *cp, *lam;
 
-	//Real **aelm; // для одного элемента A.
-    //Real *rloc; // локальная правая часть
+	//Real **aelm; // РґР»СЏ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° A.
+    //Real *rloc; // Р»РѕРєР°Р»СЊРЅР°СЏ РїСЂР°РІР°СЏ С‡Р°СЃС‚СЊ
 
-    int nodes; // число узлов в задаче
-    int nelmts; // число элементов в модели
+    int nodes; // С‡РёСЃР»Рѕ СѓР·Р»РѕРІ РІ Р·Р°РґР°С‡Рµ
+    int nelmts; // С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РІ РјРѕРґРµР»Рё
 
 } MYTASK_DATA;
 
 // end;
 
-// файл myexporttecplot.cpp
-// начало.
+// С„Р°Р№Р» myexporttecplot.cpp
+// РЅР°С‡Р°Р»Рѕ.
 
-// проверка построеной сетки
-// экспорт результата расчёта в программу tecplot360
-// универсально подходит и для треугольных и для квадратных ячеек.
+// РїСЂРѕРІРµСЂРєР° РїРѕСЃС‚СЂРѕРµРЅРѕР№ СЃРµС‚РєРё
+// СЌРєСЃРїРѕСЂС‚ СЂРµР·СѓР»СЊС‚Р°С‚Р° СЂР°СЃС‡С‘С‚Р° РІ РїСЂРѕРіСЂР°РјРјСѓ tecplot360
+// СѓРЅРёРІРµСЂСЃР°Р»СЊРЅРѕ РїРѕРґС…РѕРґРёС‚ Рё РґР»СЏ С‚СЂРµСѓРіРѕР»СЊРЅС‹С… Рё РґР»СЏ РєРІР°РґСЂР°С‚РЅС‹С… СЏС‡РµРµРє.
 void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Real* y, Real* potent)
 {
 	FILE *fp;
 	errno_t err;
-	// создание файла для записи.
+	// СЃРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° РґР»СЏ Р·Р°РїРёСЃРё.
 	if ((err = fopen_s( &fp, "tigel_interior_tec.dat"/*"temp_xy.PLT"*/, "w")) != 0) {
 		printf("Create File Error\n");
 	}
 	else {
-		// запись заголовка
+		// Р·Р°РїРёСЃСЊ Р·Р°РіРѕР»РѕРІРєР°
 		fprintf(fp, "TITLE = \"temperature\"\n");
 
-		// запись имён переменных
+		// Р·Р°РїРёСЃСЊ РёРјС‘РЅ РїРµСЂРµРјРµРЅРЅС‹С…
 		//fprintf(fp, "VARIABLES = x, y, \"temperature\" , Vx, Vy, Mag \n");
 		if (btriangle) {
-			fprintf(fp, "VARIABLES = x, y \n"); // без температуры (зачем лишние данные это же сеточный генератор).
+			fprintf(fp, "VARIABLES = x, y \n"); // Р±РµР· С‚РµРјРїРµСЂР°С‚СѓСЂС‹ (Р·Р°С‡РµРј Р»РёС€РЅРёРµ РґР°РЅРЅС‹Рµ СЌС‚Рѕ Р¶Рµ СЃРµС‚РѕС‡РЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ).
 		}
 		else {
 		   fprintf(fp, "VARIABLES = x, y, \"temperature\" \n");
 		}
 
-		// запись информации о зонах
+		// Р·Р°РїРёСЃСЊ РёРЅС„РѕСЂРјР°С†РёРё Рѕ Р·РѕРЅР°С…
 		if (nve==3) fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=TRIANGLE, F=FEBLOCK\n\n", nodes, nelmts);
         if (nve==4) {
 			if (btriangle) {
-				// каждый четырёхугольник это два треугольника, поэтому 
-				// треугольных элементов в два раза больше.
+				// РєР°Р¶РґС‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє СЌС‚Рѕ РґРІР° С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°, РїРѕСЌС‚РѕРјСѓ 
+				// С‚СЂРµСѓРіРѕР»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ РІ РґРІР° СЂР°Р·Р° Р±РѕР»СЊС€Рµ.
                 fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=TRIANGLE, F=FEBLOCK\n\n", nodes, 2*nelmts);
 			}
 			else {
-				// истинные четырёхугольные элементы.
+				// РёСЃС‚РёРЅРЅС‹Рµ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹.
 			    fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=QUADRILATERAL, F=FEBLOCK\n\n", nodes, nelmts);
 			}
 		}
 
-		int i=0; // счётчики 
-		int j=0; // цикла for
+		int i=0; // СЃС‡С‘С‚С‡РёРєРё 
+		int j=0; // С†РёРєР»Р° for
 
-		// запись x
+		// Р·Р°РїРёСЃСЊ x
 	    for (i=0; i<nodes; i++) {	
 				fprintf(fp, "%e ", x[i]);
 				if (i%10==0) fprintf(fp, "\n");
@@ -96,7 +96,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 			
 		fprintf(fp, "\n");
           
-		// запись y
+		// Р·Р°РїРёСЃСЊ y
 		for (i=0;i<nodes; i++) {
 		 	fprintf(fp, "%e ", y[i]);
             if (i%10==0) fprintf(fp, "\n");
@@ -105,7 +105,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
         fprintf(fp, "\n");
 
 		if (!btriangle) {
-		    // запись температуры
+		    // Р·Р°РїРёСЃСЊ С‚РµРјРїРµСЂР°С‚СѓСЂС‹
 		    for (i=0;i<nodes; i++) {
 			    //fprintf(fp, "%e ", potent[TEMP][i]);
 			    fprintf(fp, "%e ", potent[i]);
@@ -116,21 +116,21 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 
 		}
 		/*
-		// запись горизонтальной скорости
+		// Р·Р°РїРёСЃСЊ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", potent[VX][i]);
             if (i%10==0) fprintf(fp, "\n");
 		}
 
 		fprintf(fp, "\n");
-        // запись вертикальной скорости
+        // Р·Р°РїРёСЃСЊ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", potent[VY][i]);
             if (i%10==0) fprintf(fp, "\n");
 		}
         fprintf(fp, "\n");
 
-		// запись модуля скорости
+		// Р·Р°РїРёСЃСЊ РјРѕРґСѓР»СЏ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", sqrt(potent[VX][i]*potent[VX][i]+potent[VY][i]*potent[VY][i]));
             if (i%10==0) fprintf(fp, "\n");
@@ -140,21 +140,21 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
         */
 
 		if (btriangle) {
-			// каждый четырёхугольник состоит из двух треугольников.
+			// РєР°Р¶РґС‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє СЃРѕСЃС‚РѕРёС‚ РёР· РґРІСѓС… С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ.
 			for (i=0;i<nelmts; i++) {
 				fprintf(fp, "%d %d %d\n", nvtx[0][i], nvtx[1][i], nvtx[3][i]);
 				fprintf(fp, "%d %d %d\n", nvtx[1][i], nvtx[3][i], nvtx[2][i]);
 			}
 		}
 		else {
-		    // запись информации о разностной сетке
+		    // Р·Р°РїРёСЃСЊ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЂР°Р·РЅРѕСЃС‚РЅРѕР№ СЃРµС‚РєРµ
 		    for (i=0;i<nelmts; i++) {
 			    if (nve==3) fprintf(fp, "%d %d %d\n", nvtx[0][i], nvtx[1][i], nvtx[2][i]);
 			    if (nve==4) fprintf(fp, "%d %d %d %d\n", nvtx[0][i], nvtx[1][i], nvtx[2][i], nvtx[3][i]);
 		    }
 		}
 
-		fclose(fp); // закрытие файла
+		fclose(fp); // Р·Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
         //WinExec("C:\\Program Files\ (x86)\\Tecplot\\Tec360\ 2008\\bin\\tec360.exe temp_xy.PLT",SW_NORMAL);
 		  //WinExec("C:\\Program Files\ (x86)\\Tecplot\\Tec360\ 2009\\bin\\tec360.exe temp_xy.PLT", SW_NORMAL);
 		/*
@@ -172,7 +172,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 
 
 		if (btriangle) {
-			// граничные условия
+			// РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ
 			FILE *fp1;
 	        errno_t err1;
             if ((err1 = fopen_s( &fp1, "gru.txt", "r")) != 0) {
@@ -182,7 +182,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 
 				FILE *fp2;
 	            errno_t err2;
-	            // создание файла для записи.
+	            // СЃРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° РґР»СЏ Р·Р°РїРёСЃРё.
 	            if ((err2 = fopen_s( &fp2, "tigel_boundary_tec.dat", "w")) != 0) {
 		            printf("Create File Error\n");
 	            }
@@ -208,7 +208,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 						 int inod=0;
 	                     for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 inod++;
@@ -216,7 +216,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 inod++;
@@ -229,10 +229,10 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 			             fprintf(fp2,"ZONE T=\"edge%d\", N=%d, E=%d, ET=LINESEG, F=FEBLOCK, VAL=%1.4f\n",j,inod,inod-1,fval);
 						 fprintf(fp2,"\n");
 						 inod=0;
-						 // печать x
+						 // РїРµС‡Р°С‚СЊ x
 						 for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 fprintf(fp2, "%e ", x[i]);
@@ -242,7 +242,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 fprintf(fp2, "%e ", x[i]);
@@ -257,10 +257,10 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 						  fprintf(fp2, "\n");
 
 						  inod=0;
-						 // печать y
+						 // РїРµС‡Р°С‚СЊ y
 						 for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 fprintf(fp2, "%e ", y[i]);
@@ -270,7 +270,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 fprintf(fp2, "%e ", y[i]);
@@ -284,11 +284,11 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 						 fprintf(fp2, "\n");
 						  fprintf(fp2, "\n");
 
-						 // пары должны иметь глобальную нумерацию начиная с единицы.
+						 // РїР°СЂС‹ РґРѕР»Р¶РЅС‹ РёРјРµС‚СЊ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РЅСѓРјРµСЂР°С†РёСЋ РЅР°С‡РёРЅР°СЏ СЃ РµРґРёРЅРёС†С‹.
 						 int iprev=-1;
 	                     for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 if (iprev>-1) {
@@ -299,7 +299,7 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 if (iprev>-1) {
@@ -326,53 +326,53 @@ void exporttecplotxy360(int nve, int nelmts, int nodes, int** nvtx, Real* x, Rea
 	}
 } // exporttecplotxy360
 
-// проверка построеной сетки
-// экспорт результата расчёта в программу tecplot360
-// универсально подходит и для треугольных и для квадратных ячеек.
+// РїСЂРѕРІРµСЂРєР° РїРѕСЃС‚СЂРѕРµРЅРѕР№ СЃРµС‚РєРё
+// СЌРєСЃРїРѕСЂС‚ СЂРµР·СѓР»СЊС‚Р°С‚Р° СЂР°СЃС‡С‘С‚Р° РІ РїСЂРѕРіСЂР°РјРјСѓ tecplot360
+// СѓРЅРёРІРµСЂСЃР°Р»СЊРЅРѕ РїРѕРґС…РѕРґРёС‚ Рё РґР»СЏ С‚СЂРµСѓРіРѕР»СЊРЅС‹С… Рё РґР»СЏ РєРІР°РґСЂР°С‚РЅС‹С… СЏС‡РµРµРє.
 void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Real* x, Real* y, Real* potent)
 {
 	FILE *fp;
 	errno_t err;
 
-	float hz=0.2; // шаг в третьем измерении.
-	int nz=10; // количество слоёв в 3D (не менее 2ух).
+	float hz=0.2; // С€Р°Рі РІ С‚СЂРµС‚СЊРµРј РёР·РјРµСЂРµРЅРёРё.
+	int nz=10; // РєРѕР»РёС‡РµСЃС‚РІРѕ СЃР»РѕС‘РІ РІ 3D (РЅРµ РјРµРЅРµРµ 2СѓС…).
 
-	// создание файла для записи.
+	// СЃРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° РґР»СЏ Р·Р°РїРёСЃРё.
 	if ((err = fopen_s( &fp, "tigel_interior_tec.dat"/*"temp_xy.PLT"*/, "w")) != 0) {
 		printf("Create File Error\n");
 	}
 	else {
-		// запись заголовка
+		// Р·Р°РїРёСЃСЊ Р·Р°РіРѕР»РѕРІРєР°
 		fprintf(fp, "TITLE = \"temperature\"\n");
 
-		// запись имён переменных
+		// Р·Р°РїРёСЃСЊ РёРјС‘РЅ РїРµСЂРµРјРµРЅРЅС‹С…
 		//fprintf(fp, "VARIABLES = x, y, \"temperature\" , Vx, Vy, Mag \n");
 		if (btriangle) {
-			fprintf(fp, "VARIABLES = x, y, z \n"); // без температуры (зачем лишние данные это же сеточный генератор).
+			fprintf(fp, "VARIABLES = x, y, z \n"); // Р±РµР· С‚РµРјРїРµСЂР°С‚СѓСЂС‹ (Р·Р°С‡РµРј Р»РёС€РЅРёРµ РґР°РЅРЅС‹Рµ СЌС‚Рѕ Р¶Рµ СЃРµС‚РѕС‡РЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ).
 		}
 		else {
 		   fprintf(fp, "VARIABLES = x, y, z, \"temperature\" \n");
 		}
 
-		// запись информации о зонах
+		// Р·Р°РїРёСЃСЊ РёРЅС„РѕСЂРјР°С†РёРё Рѕ Р·РѕРЅР°С…
 		if (nve==3) fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=TRIANGLE, F=FEBLOCK\n\n", nz*nodes, nelmts*(nz-1));
         if (nve==4) {
 			if (btriangle) {
-				// каждый четырёхугольник это два треугольника, поэтому 
-				// треугольных элементов в два раза больше.
-				// Дело в том что поддерживается только BRICK и TETRAHEDRON
+				// РєР°Р¶РґС‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє СЌС‚Рѕ РґРІР° С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°, РїРѕСЌС‚РѕРјСѓ 
+				// С‚СЂРµСѓРіРѕР»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ РІ РґРІР° СЂР°Р·Р° Р±РѕР»СЊС€Рµ.
+				// Р”РµР»Рѕ РІ С‚РѕРј С‡С‚Рѕ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ BRICK Рё TETRAHEDRON
                 fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=PRIZM, F=FEBLOCK\n\n", nz*nodes, 2*nelmts*(nz-1));
 			}
 			else {
-				// истинные четырёхугольные элементы.
+				// РёСЃС‚РёРЅРЅС‹Рµ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹.
 			    fprintf(fp, "ZONE T=\"Rampant\", N=%d, E=%d, ET=BRICK, F=FEBLOCK\n\n", nz*nodes, nelmts*(nz-1));
 			}
 		}
 
-		int i=0; // счётчики 
-		int j=0; // цикла for
+		int i=0; // СЃС‡С‘С‚С‡РёРєРё 
+		int j=0; // С†РёРєР»Р° for
 
-		// запись x
+		// Р·Р°РїРёСЃСЊ x
 		for (int k=0; k<nz; k++) {
 	    for (i=0; i<nodes; i++) {	
 				fprintf(fp, "%e ", x[i]);
@@ -382,7 +382,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 			
 		fprintf(fp, "\n");
           
-		// запись y
+		// Р·Р°РїРёСЃСЊ y
 		for (int k=0; k<nz; k++) {
 		for (i=0;i<nodes; i++) {
 		 	fprintf(fp, "%e ", y[i]);
@@ -392,7 +392,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 			
         fprintf(fp, "\n");
 
-		// запись z
+		// Р·Р°РїРёСЃСЊ z
 		for (int k=0; k<nz; k++) {
 		for (i=0;i<nodes; i++) {
 		 	fprintf(fp, "%e ", 0.0+k*hz);
@@ -401,7 +401,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 		}
 
 		if (!btriangle) {
-		    // запись температуры
+		    // Р·Р°РїРёСЃСЊ С‚РµРјРїРµСЂР°С‚СѓСЂС‹
 			for (int k=0; k<nz; k++) {
 		    for (i=0;i<nodes; i++) {
 			    //fprintf(fp, "%e ", potent[TEMP][i]);
@@ -414,21 +414,21 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 
 		}
 		/*
-		// запись горизонтальной скорости
+		// Р·Р°РїРёСЃСЊ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", potent[VX][i]);
             if (i%10==0) fprintf(fp, "\n");
 		}
 
 		fprintf(fp, "\n");
-        // запись вертикальной скорости
+        // Р·Р°РїРёСЃСЊ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", potent[VY][i]);
             if (i%10==0) fprintf(fp, "\n");
 		}
         fprintf(fp, "\n");
 
-		// запись модуля скорости
+		// Р·Р°РїРёСЃСЊ РјРѕРґСѓР»СЏ СЃРєРѕСЂРѕСЃС‚Рё
 		for (i=0;i<nodes; i++) {
 			fprintf(fp, "%e ", sqrt(potent[VX][i]*potent[VX][i]+potent[VY][i]*potent[VY][i]));
             if (i%10==0) fprintf(fp, "\n");
@@ -438,7 +438,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
         */
 
 		if (btriangle) {
-			// каждый четырёхугольник состоит из двух треугольников.
+			// РєР°Р¶РґС‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє СЃРѕСЃС‚РѕРёС‚ РёР· РґРІСѓС… С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ.
 			for (int k=0; k<nz-1; k++) {
 			for (i=0;i<nelmts; i++) {
 				fprintf(fp, "%d %d %d %d %d %d\n", nvtx[0][i]+k*nodes, nvtx[1][i]+k*nodes, nvtx[3][i]+k*nodes,nvtx[0][i]+(k+1)*nodes, nvtx[1][i]+(k+1)*nodes, nvtx[3][i]+(k+1)*nodes);
@@ -447,7 +447,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 			}
 		}
 		else {
-		    // запись информации о разностной сетке
+		    // Р·Р°РїРёСЃСЊ РёРЅС„РѕСЂРјР°С†РёРё Рѕ СЂР°Р·РЅРѕСЃС‚РЅРѕР№ СЃРµС‚РєРµ
 			for (int k=0; k<nz-1; k++) {
 		    for (i=0;i<nelmts; i++) {
 			    if (nve==3) fprintf(fp, "%d %d %d\n", nvtx[0][i], nvtx[1][i], nvtx[2][i]);
@@ -458,7 +458,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 			}
 		}
 
-		fclose(fp); // закрытие файла
+		fclose(fp); // Р·Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
         //WinExec("C:\\Program Files\ (x86)\\Tecplot\\Tec360\ 2008\\bin\\tec360.exe temp_xy.PLT",SW_NORMAL);
 		  //WinExec("C:\\Program Files\ (x86)\\Tecplot\\Tec360\ 2009\\bin\\tec360.exe temp_xy.PLT", SW_NORMAL);
 		/*
@@ -476,7 +476,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 
 		
 		/*if (btriangle) {
-			// граничные условия
+			// РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ
 			FILE *fp1;
 	        errno_t err1;
             if ((err1 = fopen_s( &fp1, "gru.txt", "r")) != 0) {
@@ -486,7 +486,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 
 				FILE *fp2;
 	            errno_t err2;
-	            // создание файла для записи.
+	            // СЃРѕР·РґР°РЅРёРµ С„Р°Р№Р»Р° РґР»СЏ Р·Р°РїРёСЃРё.
 	            if ((err2 = fopen_s( &fp2, "tigel_boundary_tec.dat", "w")) != 0) {
 		            printf("Create File Error\n");
 	            }
@@ -512,7 +512,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 						 int inod=0;
 	                     for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 inod++;
@@ -520,7 +520,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 inod++;
@@ -533,10 +533,10 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 			             fprintf(fp2,"ZONE T=\"edge%d\", N=%d, E=%d, ET=LINESEG, F=FEBLOCK, VAL=%1.4f\n",j,inod,inod-1,fval);
 						 fprintf(fp2,"\n");
 						 inod=0;
-						 // печать x
+						 // РїРµС‡Р°С‚СЊ x
 						 for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 fprintf(fp2, "%e ", x[i]);
@@ -546,7 +546,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 fprintf(fp2, "%e ", x[i]);
@@ -561,10 +561,10 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 						  fprintf(fp2, "\n");
 
 						  inod=0;
-						 // печать y
+						 // РїРµС‡Р°С‚СЊ y
 						 for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 fprintf(fp2, "%e ", y[i]);
@@ -574,7 +574,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 fprintf(fp2, "%e ", y[i]);
@@ -588,11 +588,11 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 						 fprintf(fp2, "\n");
 						  fprintf(fp2, "\n");
 
-						 // пары должны иметь глобальную нумерацию начиная с единицы.
+						 // РїР°СЂС‹ РґРѕР»Р¶РЅС‹ РёРјРµС‚СЊ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РЅСѓРјРµСЂР°С†РёСЋ РЅР°С‡РёРЅР°СЏ СЃ РµРґРёРЅРёС†С‹.
 						 int iprev=-1;
 	                     for (i=0; i<nodes; i++) {	
                              if (iorient==0) {
-								 // горизонтальная линия.
+								 // РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(y[i]-fiso)<1.0e-20) {
 									 if ((x[i]>fstart)&&(x[i]<fend)) {
 										 if (iprev>-1) {
@@ -603,7 +603,7 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 								 }
 							 }
 							 if (iorient==1) {
-								 // вертикальная линия.
+								 // РІРµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ.
 								 if (fabs(x[i]-fiso)<1.0e-20) {
 									 if ((y[i]>fstart)&&(y[i]<fend)) {
 										 if (iprev>-1) {
@@ -631,6 +631,6 @@ void exporttecplotxy360extrude3D(int nve, int nelmts, int nodes, int** nvtx, Rea
 } // exporttecplotxy360extrude3D
 
 
-// конец
+// РєРѕРЅРµС†
 
 

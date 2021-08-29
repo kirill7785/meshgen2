@@ -1,8 +1,8 @@
-// meshgen.cpp: определяет точку входа для консольного приложения.
-//  Это консольный сеточный генератор не требующий вмешательства пользователя.
-// Основан на алгебраических методах.
-// Dynamic Algebraic Mesh Generator v0.0.1 30 ноября 2012.
-// 1 января 2015 года добавление треугольных элементов. (как замена EasyMesh для BenarFLOW).
+// meshgen.cpp: РѕРїСЂРµРґРµР»СЏРµС‚ С‚РѕС‡РєСѓ РІС…РѕРґР° РґР»СЏ РєРѕРЅСЃРѕР»СЊРЅРѕРіРѕ РїСЂРёР»РѕР¶РµРЅРёСЏ.
+//  Р­С‚Рѕ РєРѕРЅСЃРѕР»СЊРЅС‹Р№ СЃРµС‚РѕС‡РЅС‹Р№ РіРµРЅРµСЂР°С‚РѕСЂ РЅРµ С‚СЂРµР±СѓСЋС‰РёР№ РІРјРµС€Р°С‚РµР»СЊСЃС‚РІР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ.
+// РћСЃРЅРѕРІР°РЅ РЅР° Р°Р»РіРµР±СЂР°РёС‡РµСЃРєРёС… РјРµС‚РѕРґР°С….
+// Dynamic Algebraic Mesh Generator v0.0.1 30 РЅРѕСЏР±СЂСЏ 2012.
+// 1 СЏРЅРІР°СЂСЏ 2015 РіРѕРґР° РґРѕР±Р°РІР»РµРЅРёРµ С‚СЂРµСѓРіРѕР»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ. (РєР°Рє Р·Р°РјРµРЅР° EasyMesh РґР»СЏ BenarFLOW).
 
 #include "stdafx.h"
 #include <stdio.h>
@@ -10,125 +10,125 @@
 #include <conio.h>
 #include <math.h>
 
-bool btriangle=false; // треугольный элемент.
+bool btriangle=false; // С‚СЂРµСѓРіРѕР»СЊРЅС‹Р№ СЌР»РµРјРµРЅС‚.
 
-// Содержит данные необходимые для экспорта в программу Tecplot 360.
+// РЎРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ СЌРєСЃРїРѕСЂС‚Р° РІ РїСЂРѕРіСЂР°РјРјСѓ Tecplot 360.
 #include "AliceDataDubl.cpp"
 
-const double eps=1e-20; // для отделения вещественного нуля.
+const double eps=1e-20; // РґР»СЏ РѕС‚РґРµР»РµРЅРёСЏ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ РЅСѓР»СЏ.
 
-#define NONE -1 // прямая линия
-#define MYPARABOLA 0 // парабола
-#define MYSIN 1 // синусоида
-#define MYCIRCLE 2 // окружность
+#define NONE -1 // РїСЂСЏРјР°СЏ Р»РёРЅРёСЏ
+#define MYPARABOLA 0 // РїР°СЂР°Р±РѕР»Р°
+#define MYSIN 1 // СЃРёРЅСѓСЃРѕРёРґР°
+#define MYCIRCLE 2 // РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ
 
-#define CURVETOP 0 // NONE -1 просто прямоугольник.
+#define CURVETOP 0 // NONE -1 РїСЂРѕСЃС‚Рѕ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє.
 #define CURVEBOTTOM 1
 #define CURVEDOUBLE 2
 
-typedef enum States { Normal, Slash, Comment, EndComment, EndFile, StrState, SimState, OneComment /* перечисление всех
-                                                  состояний автомата */ } States;
+typedef enum States { Normal, Slash, Comment, EndComment, EndFile, StrState, SimState, OneComment /* РїРµСЂРµС‡РёСЃР»РµРЅРёРµ РІСЃРµС…
+                                                  СЃРѕСЃС‚РѕСЏРЅРёР№ Р°РІС‚РѕРјР°С‚Р° */ } States;
 
 typedef struct TBLOCK {
 
-	int priority; // приоритет блока.
+	int priority; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
-	double xS, yS, xE, yE; // размеры блока
-	int inhollow; // если 0 то hollow блок.
-	double rho, cp, lambda; // свойства материала.
+	double xS, yS, xE, yE; // СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°
+	int inhollow; // РµСЃР»Рё 0 С‚Рѕ hollow Р±Р»РѕРє.
+	double rho, cp, lambda; // СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 } BLOCK;
 
-// Универсальный блок какие либо две противоположные границы
-// этого элемента задаются функцией.
+// РЈРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ Р±Р»РѕРє РєР°РєРёРµ Р»РёР±Рѕ РґРІРµ РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅС‹Рµ РіСЂР°РЅРёС†С‹
+// СЌС‚РѕРіРѕ СЌР»РµРјРµРЅС‚Р° Р·Р°РґР°СЋС‚СЃСЏ С„СѓРЅРєС†РёРµР№.
 typedef struct TBLOCKU {
 
-	int priority; // приоритет блока.
+	int priority; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
-	int inx, iny; // число узлов сетки по горизонтали и вертикали.
+	int inx, iny; // С‡РёСЃР»Рѕ СѓР·Р»РѕРІ СЃРµС‚РєРё РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё Рё РІРµСЂС‚РёРєР°Р»Рё.
 
-	// yE граница верхней зоны, этот элемент должен
-	// быть вписан в прямоугольник чтобы всё было согласованно с другими блоками.
+	// yE РіСЂР°РЅРёС†Р° РІРµСЂС…РЅРµР№ Р·РѕРЅС‹, СЌС‚РѕС‚ СЌР»РµРјРµРЅС‚ РґРѕР»Р¶РµРЅ
+	// Р±С‹С‚СЊ РІРїРёСЃР°РЅ РІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє С‡С‚РѕР±С‹ РІСЃС‘ Р±С‹Р»Рѕ СЃРѕРіР»Р°СЃРѕРІР°РЅРЅРѕ СЃ РґСЂСѓРіРёРјРё Р±Р»РѕРєР°РјРё.
 
-	int icurvetop, icurvebottom; // выбор кривой сверху и снизу.
+	int icurvetop, icurvebottom; // РІС‹Р±РѕСЂ РєСЂРёРІРѕР№ СЃРІРµСЂС…Сѓ Рё СЃРЅРёР·Сѓ.
 
-	double xS, yS, xE, yE; // размеры блока
+	double xS, yS, xE, yE; // СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°
 
-	int itoporbottom; // где задаются кривые сверху или снизу.
+	int itoporbottom; // РіРґРµ Р·Р°РґР°СЋС‚СЃСЏ РєСЂРёРІС‹Рµ СЃРІРµСЂС…Сѓ РёР»Рё СЃРЅРёР·Сѓ.
 
 
 	// t - top, b - bottom.
-	double at,bt,ct; // формула для параболы : a*x^2+b*x+c (icurve==MYPARABOLA)
-	double dyt, epsat, omegat, dxt; // формула для синуса : dy+epsa*sin(2*MPI*omega*(x-dx)) (icurve==MYSIN).
-	double ab,bb,cb; // формула для параболы : a*x^2+b*x+c (icurve==MYPARABOLA)
-	double dyb, epsab, omegab, dxb; // формула для синуса : dy+epsa*sin(2*MPI*omega*(x-dx)) (icurve==MYSIN).
+	double at,bt,ct; // С„РѕСЂРјСѓР»Р° РґР»СЏ РїР°СЂР°Р±РѕР»С‹ : a*x^2+b*x+c (icurve==MYPARABOLA)
+	double dyt, epsat, omegat, dxt; // С„РѕСЂРјСѓР»Р° РґР»СЏ СЃРёРЅСѓСЃР° : dy+epsa*sin(2*MPI*omega*(x-dx)) (icurve==MYSIN).
+	double ab,bb,cb; // С„РѕСЂРјСѓР»Р° РґР»СЏ РїР°СЂР°Р±РѕР»С‹ : a*x^2+b*x+c (icurve==MYPARABOLA)
+	double dyb, epsab, omegab, dxb; // С„РѕСЂРјСѓР»Р° РґР»СЏ СЃРёРЅСѓСЃР° : dy+epsa*sin(2*MPI*omega*(x-dx)) (icurve==MYSIN).
 
-	// в случае icurvetop==MYCIRCLE верхняя граница задаётся в виде дуги окружности.
+	// РІ СЃР»СѓС‡Р°Рµ icurvetop==MYCIRCLE РІРµСЂС…РЅСЏСЏ РіСЂР°РЅРёС†Р° Р·Р°РґР°С‘С‚СЃСЏ РІ РІРёРґРµ РґСѓРіРё РѕРєСЂСѓР¶РЅРѕСЃС‚Рё.
 	double yCt, rt, angleSt, angleEt; // y=yCt+rt*sin(angle).
 	
-	int inhollow; // если 0 то hollow блок.
-	double rho, cp, lambda; // свойства материала.
+	int inhollow; // РµСЃР»Рё 0 С‚Рѕ hollow Р±Р»РѕРє.
+	double rho, cp, lambda; // СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 } BLOCKU;
 
-// универсальный сектор
+// СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ СЃРµРєС‚РѕСЂ
 typedef struct TSECTORU {
-	int priority; // приоритет блока.
+	int priority; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
-	int inr, intheta; // число узлов сетки по горизонтали и вертикали.
-	int ip; // идентификатор перехода с круга на квадрат и наоборот.
-	// что обозначают значения ip перечислено в файле obj.txt.
+	int inr, intheta; // С‡РёСЃР»Рѕ СѓР·Р»РѕРІ СЃРµС‚РєРё РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё Рё РІРµСЂС‚РёРєР°Р»Рё.
+	int ip; // РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРµСЂРµС…РѕРґР° СЃ РєСЂСѓРіР° РЅР° РєРІР°РґСЂР°С‚ Рё РЅР°РѕР±РѕСЂРѕС‚.
+	// С‡С‚Рѕ РѕР±РѕР·РЅР°С‡Р°СЋС‚ Р·РЅР°С‡РµРЅРёСЏ ip РїРµСЂРµС‡РёСЃР»РµРЅРѕ РІ С„Р°Р№Р»Рµ obj.txt.
 
-	double xC, yC; // центр окружности.
-	double rmin, rmax; // диапазон изменения радиуса.
-	double thetamin, thetamax; // диапазон изменения угла.
+	double xC, yC; // С†РµРЅС‚СЂ РѕРєСЂСѓР¶РЅРѕСЃС‚Рё.
+	double rmin, rmax; // РґРёР°РїР°Р·РѕРЅ РёР·РјРµРЅРµРЅРёСЏ СЂР°РґРёСѓСЃР°.
+	double thetamin, thetamax; // РґРёР°РїР°Р·РѕРЅ РёР·РјРµРЅРµРЅРёСЏ СѓРіР»Р°.
 
-	int inhollow; // если 0 то hollow блок.
-	double rho, cp, lambda; // свойства материала.
+	int inhollow; // РµСЃР»Рё 0 С‚Рѕ hollow Р±Р»РѕРє.
+	double rho, cp, lambda; // СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 
 } SECTORU;
 
 typedef struct TBLOCKNEW {
-	int priority; // приоритет блока.
+	int priority; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
-	int n1, n2; // количество разбиений по сторонам (1,3) и (2,4)
+	int n1, n2; // РєРѕР»РёС‡РµСЃС‚РІРѕ СЂР°Р·Р±РёРµРЅРёР№ РїРѕ СЃС‚РѕСЂРѕРЅР°Рј (1,3) Рё (2,4)
 
 	double x1, y1, x2, y2, x3, y3, x4, y4;
 
-	int inhollow; // если 0 то hollow блок.
-	double rho, cp, lambda; // свойства материала.
+	int inhollow; // РµСЃР»Рё 0 С‚Рѕ hollow Р±Р»РѕРє.
+	double rho, cp, lambda; // СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 } BLOCKNEW;
 
-BLOCK* b; // прямоугольные блоки.
+BLOCK* b; // РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Рµ Р±Р»РѕРєРё.
 BLOCKU* bt;
-SECTORU* bsec; // сектор.
-BLOCKNEW* bnew; // произвольный выпуклый четырёхугольник.
+SECTORU* bsec; // СЃРµРєС‚РѕСЂ.
+BLOCKNEW* bnew; // РїСЂРѕРёР·РІРѕР»СЊРЅС‹Р№ РІС‹РїСѓРєР»С‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє.
 
-// минимальное количество клеток по 
-// каждому из направлений на минимальном
-// элементе разбиения
-int min_elem_in_x_element=4; // обязательно не меньше 4!
-int min_elem_in_y_element=4; // обязательно не меньше 4!
-// ручная адаптация сетки
+// РјРёРЅРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»РµС‚РѕРє РїРѕ 
+// РєР°Р¶РґРѕРјСѓ РёР· РЅР°РїСЂР°РІР»РµРЅРёР№ РЅР° РјРёРЅРёРјР°Р»СЊРЅРѕРј
+// СЌР»РµРјРµРЅС‚Рµ СЂР°Р·Р±РёРµРЅРёСЏ
+int min_elem_in_x_element=4; // РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РЅРµ РјРµРЅСЊС€Рµ 4!
+int min_elem_in_y_element=4; // РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РЅРµ РјРµРЅСЊС€Рµ 4!
+// СЂСѓС‡РЅР°СЏ Р°РґР°РїС‚Р°С†РёСЏ СЃРµС‚РєРё
 int adapt_x=0;
 int adapt_y=0;
 
-// реализация функции SetLength из Delphi 
-// для изменения размеров динамического массива ra. 
-// Возвращает модифицированный массив ra необходимого 
-//  размера. 
-// Во время работы функции утечки памяти не происходит.
+// СЂРµР°Р»РёР·Р°С†РёСЏ С„СѓРЅРєС†РёРё SetLength РёР· Delphi 
+// РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ СЂР°Р·РјРµСЂРѕРІ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР° ra. 
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРѕРґРёС„РёС†РёСЂРѕРІР°РЅРЅС‹Р№ РјР°СЃСЃРёРІ ra РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ 
+//  СЂР°Р·РјРµСЂР°. 
+// Р’Рѕ РІСЂРµРјСЏ СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё СѓС‚РµС‡РєРё РїР°РјСЏС‚Рё РЅРµ РїСЂРѕРёСЃС…РѕРґРёС‚.
 void SetLength(double* &ra, int isizeold, int isize) 
 {
 
-	// isize - новая длина динамического массива.
+	// isize - РЅРѕРІР°СЏ РґР»РёРЅР° РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°.
 	double *temp;
 	temp = new double[isize];
     int i;
-	for (i=0; i<isize; i++) temp[i]=0.0; // инициализация
+	for (i=0; i<isize; i++) temp[i]=0.0; // РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
     /*
 	int isizeold;
 	if (ra != NULL) {
-       isizeold = sizeof(ra)/sizeof(ra[0]); // длина старого массива
-       printf("%d  ",isizeold); // не хочет правильно определять размер массива 
+       isizeold = sizeof(ra)/sizeof(ra[0]); // РґР»РёРЅР° СЃС‚Р°СЂРѕРіРѕ РјР°СЃСЃРёРІР°
+       printf("%d  ",isizeold); // РЅРµ С…РѕС‡РµС‚ РїСЂР°РІРёР»СЊРЅРѕ РѕРїСЂРµРґРµР»СЏС‚СЊ СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° 
 	} 
 	  else
 	{
@@ -140,19 +140,19 @@ void SetLength(double* &ra, int isizeold, int isize)
 	
 	
 	if (isizeold!=0) {
-		delete  ra; // уничтожение объекта
+		delete  ra; // СѓРЅРёС‡С‚РѕР¶РµРЅРёРµ РѕР±СЉРµРєС‚Р°
 	}
-	ra = new double[isize]; // выделение памяти
-	for (i=0; i<isize; i++) ra[i]=temp[i]; // копирование
-	delete temp; // освобождение памяти
+	ra = new double[isize]; // РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё
+	for (i=0; i<isize; i++) ra[i]=temp[i]; // РєРѕРїРёСЂРѕРІР°РЅРёРµ
+	delete temp; // РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё
 	
 } // SetLength
 
-// добавляет несуществующую границу к массиву
+// РґРѕР±Р°РІР»СЏРµС‚ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰СѓСЋ РіСЂР°РЅРёС†Сѓ Рє РјР°СЃСЃРёРІСѓ
 void addboundary(double* &rb, int &in, double g) {
-	// rb - модифицируемый массив границ,
-	// in - номер последней границы в массиве, нумерация начинается с нуля.
-	// g - граница, кандидат на добавление.
+	// rb - РјРѕРґРёС„РёС†РёСЂСѓРµРјС‹Р№ РјР°СЃСЃРёРІ РіСЂР°РЅРёС†,
+	// in - РЅРѕРјРµСЂ РїРѕСЃР»РµРґРЅРµР№ РіСЂР°РЅРёС†С‹ РІ РјР°СЃСЃРёРІРµ, РЅСѓРјРµСЂР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РЅСѓР»СЏ.
+	// g - РіСЂР°РЅРёС†Р°, РєР°РЅРґРёРґР°С‚ РЅР° РґРѕР±Р°РІР»РµРЅРёРµ.
 	int i=0;
     
 	bool bfind=false;
@@ -165,21 +165,21 @@ void addboundary(double* &rb, int &in, double g) {
 } // addboundary
 
 
-// Сортировка по возрастанию прямым обменом -
-// пузырьковая улучшенная.
-// Основной принцип: если элементы уже упорядочены, 
-// сортировка прекращается.
-// in - предполагается достаточно малым меньше 500,
-// именно поэтому применима пузырьковая сортировка.
+// РЎРѕСЂС‚РёСЂРѕРІРєР° РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РїСЂСЏРјС‹Рј РѕР±РјРµРЅРѕРј -
+// РїСѓР·С‹СЂСЊРєРѕРІР°СЏ СѓР»СѓС‡С€РµРЅРЅР°СЏ.
+// РћСЃРЅРѕРІРЅРѕР№ РїСЂРёРЅС†РёРї: РµСЃР»Рё СЌР»РµРјРµРЅС‚С‹ СѓР¶Рµ СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹, 
+// СЃРѕСЂС‚РёСЂРѕРІРєР° РїСЂРµРєСЂР°С‰Р°РµС‚СЃСЏ.
+// in - РїСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјР°Р»С‹Рј РјРµРЅСЊС€Рµ 500,
+// РёРјРµРЅРЅРѕ РїРѕСЌС‚РѕРјСѓ РїСЂРёРјРµРЅРёРјР° РїСѓР·С‹СЂСЊРєРѕРІР°СЏ СЃРѕСЂС‚РёСЂРѕРІРєР°.
 void BubbleEnhSort(double* &rb, int in) {
 	int i,j,k;
 	double x;
-	bool swapped; // факт обмена
+	bool swapped; // С„Р°РєС‚ РѕР±РјРµРЅР°
 
 	for (i=1; i<=in; i++) {
-		k=0; // количество обменов данного прохода
-		swapped=false; // обменов не было
-		// i пузырьков уже всплыло, их просматривать ненужно
+		k=0; // РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РјРµРЅРѕРІ РґР°РЅРЅРѕРіРѕ РїСЂРѕС…РѕРґР°
+		swapped=false; // РѕР±РјРµРЅРѕРІ РЅРµ Р±С‹Р»Рѕ
+		// i РїСѓР·С‹СЂСЊРєРѕРІ СѓР¶Рµ РІСЃРїР»С‹Р»Рѕ, РёС… РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ РЅРµРЅСѓР¶РЅРѕ
 		for (j=in; j>=i; j--) {
 			if (rb[j-1]>rb[j]) {
 				// SWAP
@@ -190,25 +190,25 @@ void BubbleEnhSort(double* &rb, int in) {
 				swapped=true;
 			}
 		}
-		if (!swapped) break; // выход из цикла
+		if (!swapped) break; // РІС‹С…РѕРґ РёР· С†РёРєР»Р°
 	}
 } // BubbleEnhSort
 
-// Целочисленная сортировка по возрастанию прямым обменом -
-// пузырьковая улучшенная.
-// Основной принцип: если элементы уже упорядочены, 
-// сортировка прекращается.
-// in - предполагается достаточно малым меньше 200,
-// именно поэтому применима пузырьковая сортировка.
+// Р¦РµР»РѕС‡РёСЃР»РµРЅРЅР°СЏ СЃРѕСЂС‚РёСЂРѕРІРєР° РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ РїСЂСЏРјС‹Рј РѕР±РјРµРЅРѕРј -
+// РїСѓР·С‹СЂСЊРєРѕРІР°СЏ СѓР»СѓС‡С€РµРЅРЅР°СЏ.
+// РћСЃРЅРѕРІРЅРѕР№ РїСЂРёРЅС†РёРї: РµСЃР»Рё СЌР»РµРјРµРЅС‚С‹ СѓР¶Рµ СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹, 
+// СЃРѕСЂС‚РёСЂРѕРІРєР° РїСЂРµРєСЂР°С‰Р°РµС‚СЃСЏ.
+// in - РїСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјР°Р»С‹Рј РјРµРЅСЊС€Рµ 200,
+// РёРјРµРЅРЅРѕ РїРѕСЌС‚РѕРјСѓ РїСЂРёРјРµРЅРёРјР° РїСѓР·С‹СЂСЊРєРѕРІР°СЏ СЃРѕСЂС‚РёСЂРѕРІРєР°.
 void BubbleEnhSorti(int* &rb, int in) {
 	int i,j,k;
 	int x;
-	bool swapped; // факт обмена
+	bool swapped; // С„Р°РєС‚ РѕР±РјРµРЅР°
 
 	for (i=1; i<=in; i++) {
-		k=0; // количество обменов данного прохода
-		swapped=false; // обменов не было
-		// i пузырьков уже всплыло, их просматривать ненужно
+		k=0; // РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±РјРµРЅРѕРІ РґР°РЅРЅРѕРіРѕ РїСЂРѕС…РѕРґР°
+		swapped=false; // РѕР±РјРµРЅРѕРІ РЅРµ Р±С‹Р»Рѕ
+		// i РїСѓР·С‹СЂСЊРєРѕРІ СѓР¶Рµ РІСЃРїР»С‹Р»Рѕ, РёС… РїСЂРѕСЃРјР°С‚СЂРёРІР°С‚СЊ РЅРµРЅСѓР¶РЅРѕ
 		for (j=in; j>=i; j--) {
 			if (rb[j-1]>rb[j]) {
 				// SWAP
@@ -219,7 +219,7 @@ void BubbleEnhSorti(int* &rb, int in) {
 				swapped=true;
 			}
 		}
-		if (!swapped) break; // выход из цикла
+		if (!swapped) break; // РІС‹С…РѕРґ РёР· С†РёРєР»Р°
 	}
 } // BubbleEnhSorti
 
@@ -229,49 +229,49 @@ double fmin(double ra, double rb) {
 	return rb;
 } // fmin
 
-// возвращает наибольшее из двух чисел
+// РІРѕР·РІСЂР°С‰Р°РµС‚ РЅР°РёР±РѕР»СЊС€РµРµ РёР· РґРІСѓС… С‡РёСЃРµР»
 double fmax(double fA, double fB) {
 	double r=fA;
 	if (fB>r) r=fB;
 	return r;
 } // fmax
 
-/* генерирует простейшую расчётную сетку hex cartesian - 
- * структурированная прямоугольная сетка в трёхмерной расчётной 
- * области в виде кирпича.
- * В функцию передаются значения общего количества делений по каждой из осей inx, iny. 
- * Число блоков прямоугольной формы и размеры этих блоков.
- * В результате получаются массивы xpos и ypos содержащие позиции сеточных узлов.
+/* РіРµРЅРµСЂРёСЂСѓРµС‚ РїСЂРѕСЃС‚РµР№С€СѓСЋ СЂР°СЃС‡С‘С‚РЅСѓСЋ СЃРµС‚РєСѓ hex cartesian - 
+ * СЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅР°СЏ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅР°СЏ СЃРµС‚РєР° РІ С‚СЂС‘С…РјРµСЂРЅРѕР№ СЂР°СЃС‡С‘С‚РЅРѕР№ 
+ * РѕР±Р»Р°СЃС‚Рё РІ РІРёРґРµ РєРёСЂРїРёС‡Р°.
+ * Р’ С„СѓРЅРєС†РёСЋ РїРµСЂРµРґР°СЋС‚СЃСЏ Р·РЅР°С‡РµРЅРёСЏ РѕР±С‰РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° РґРµР»РµРЅРёР№ РїРѕ РєР°Р¶РґРѕР№ РёР· РѕСЃРµР№ inx, iny. 
+ * Р§РёСЃР»Рѕ Р±Р»РѕРєРѕРІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ С„РѕСЂРјС‹ Рё СЂР°Р·РјРµСЂС‹ СЌС‚РёС… Р±Р»РѕРєРѕРІ.
+ * Р’ СЂРµР·СѓР»СЊС‚Р°С‚Рµ РїРѕР»СѓС‡Р°СЋС‚СЃСЏ РјР°СЃСЃРёРІС‹ xpos Рё ypos СЃРѕРґРµСЂР¶Р°С‰РёРµ РїРѕР·РёС†РёРё СЃРµС‚РѕС‡РЅС‹С… СѓР·Р»РѕРІ.
 */
 void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny, 
 				   int lb, BLOCK* b)
 {
 
-	bool bgeom=true; // если true, то используется неравномерная сетка по закону геометрической прогрессии.
-	double q=1.2; // 1.05 - очень слабо неравномерная, 1.1, 1.2 - умеренно неравномерная, 1.25, 1.5, 2 - сильно неравномерная. 
-	// для низкорейнольдсовых моделей турбулентности знаменатель геометрической прогрессии должен быть не больше 1.3.
+	bool bgeom=true; // РµСЃР»Рё true, С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР° РїРѕ Р·Р°РєРѕРЅСѓ РіРµРѕРјРµС‚СЂРёС‡РµСЃРєРѕР№ РїСЂРѕРіСЂРµСЃСЃРёРё.
+	double q=1.2; // 1.05 - РѕС‡РµРЅСЊ СЃР»Р°Р±Рѕ РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ, 1.1, 1.2 - СѓРјРµСЂРµРЅРЅРѕ РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ, 1.25, 1.5, 2 - СЃРёР»СЊРЅРѕ РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ. 
+	// РґР»СЏ РЅРёР·РєРѕСЂРµР№РЅРѕР»СЊРґСЃРѕРІС‹С… РјРѕРґРµР»РµР№ С‚СѓСЂР±СѓР»РµРЅС‚РЅРѕСЃС‚Рё Р·РЅР°РјРµРЅР°С‚РµР»СЊ РіРµРѕРјРµС‚СЂРёС‡РµСЃРєРѕР№ РїСЂРѕРіСЂРµСЃСЃРёРё РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РЅРµ Р±РѕР»СЊС€Рµ 1.3.
 
 	int i;
-	// По Оси Ox
-	double *rxboundary; // массив обязательных границ
+	// РџРѕ РћСЃРё Ox
+	double *rxboundary; // РјР°СЃСЃРёРІ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹С… РіСЂР°РЅРёС†
     int inumboundaryx=1; 
-	rxboundary = new double [inumboundaryx+1]; // число границ по оси x
+	rxboundary = new double [inumboundaryx+1]; // С‡РёСЃР»Рѕ РіСЂР°РЅРёС† РїРѕ РѕСЃРё x
 
-	// добавить границы кабинета
-	rxboundary[0]=b[0].xS; // начало области
-	rxboundary[inumboundaryx]=b[0].xE; // конец области
+	// РґРѕР±Р°РІРёС‚СЊ РіСЂР°РЅРёС†С‹ РєР°Р±РёРЅРµС‚Р°
+	rxboundary[0]=b[0].xS; // РЅР°С‡Р°Р»Рѕ РѕР±Р»Р°СЃС‚Рё
+	rxboundary[inumboundaryx]=b[0].xE; // РєРѕРЅРµС† РѕР±Р»Р°СЃС‚Рё
 	
-	// блоки
+	// Р±Р»РѕРєРё
 	for (i=1; i<lb; i++) {
 		addboundary(rxboundary,inumboundaryx,b[i].xS);
         addboundary(rxboundary,inumboundaryx,b[i].xE);
 	}
 
-    // упорядочивание по возрастанию
+    // СѓРїРѕСЂСЏРґРѕС‡РёРІР°РЅРёРµ РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ
 	BubbleEnhSort(rxboundary, inumboundaryx);
 
-    int *ixintervalcount; // число интервалов
-	ixintervalcount = new int [inumboundaryx]; // на один меньше чем число границ.
+    int *ixintervalcount; // С‡РёСЃР»Рѕ РёРЅС‚РµСЂРІР°Р»РѕРІ
+	ixintervalcount = new int [inumboundaryx]; // РЅР° РѕРґРёРЅ РјРµРЅСЊС€Рµ С‡РµРј С‡РёСЃР»Рѕ РіСЂР°РЅРёС†.
 	double alphascal;
 	int inowintervalcount;
 	for (i=0; i<(inumboundaryx); i++) {
@@ -286,7 +286,7 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	} //*/
     //getchar();
 
-	// заполнение масива положения узлов.
+	// Р·Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃРёРІР° РїРѕР»РѕР¶РµРЅРёСЏ СѓР·Р»РѕРІ.
 	int iposmark = 1;
 	double dx;
 	int k;
@@ -295,10 +295,10 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
     ixoldsize=1;
 	for (i=0; i<(inumboundaryx); i++) 
 	{
-		if ((ixintervalcount[i]-2)%2==0) ixintervalcount[i]++; // чтобы число узлов было всегда чётное.
-		int n2=(int)((ixintervalcount[i]-1)/2); // округление в меньшую сторону
+		if ((ixintervalcount[i]-2)%2==0) ixintervalcount[i]++; // С‡С‚РѕР±С‹ С‡РёСЃР»Рѕ СѓР·Р»РѕРІ Р±С‹Р»Рѕ РІСЃРµРіРґР° С‡С‘С‚РЅРѕРµ.
+		int n2=(int)((ixintervalcount[i]-1)/2); // РѕРєСЂСѓРіР»РµРЅРёРµ РІ РјРµРЅСЊС€СѓСЋ СЃС‚РѕСЂРѕРЅСѓ
 		double qn2=q;
-		for (int i1=1; i1<n2; i1++) qn2*=q; // возведение в степень.
+		for (int i1=1; i1<n2; i1++) qn2*=q; // РІРѕР·РІРµРґРµРЅРёРµ РІ СЃС‚РµРїРµРЅСЊ.
 		double b1=(rxboundary[i+1]-rxboundary[i])*(q-1.0)/(2.0*(qn2-1.0));
 		//printf("length=%e\n",(rxboundary[i+1]-rxboundary[i]));
 		//getchar(); // OK
@@ -310,20 +310,20 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
         for (k=iposmark; k<=iposmark+ixintervalcount[i]-2; k++)
 		{
 			if (!bgeom) {
-				// равномерная сетка
+				// СЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР°
 				xpos[k]=rxboundary[i]+(k-iposmark)*dx;
 			}
 			else
 			{
-				// неравномерная сетка
+				// РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР°
 				int ic1=k-iposmark;
 				double madd=b1;
 				if (ic1<=n2) {
-					// сначала левая сторона.
+					// СЃРЅР°С‡Р°Р»Р° Р»РµРІР°СЏ СЃС‚РѕСЂРѕРЅР°.
 					for (int i1=1; i1<ic1; i1++) madd*=q; 
 				} else 
 				{
-					// потом правая сторона.
+					// РїРѕС‚РѕРј РїСЂР°РІР°СЏ СЃС‚РѕСЂРѕРЅР°.
 					for (int i1=2*n2-ic1; i1>0; i1--) madd*=q;
 				}
 				if (k==iposmark) xpos[k]=rxboundary[i];
@@ -336,9 +336,9 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	SetLength(xpos,ixoldsize,iposmark+1);
 	xpos[iposmark]=rxboundary[inumboundaryx];
 	inx=iposmark;
-    for (i=0; i<inx; i++) xpos[i]=xpos[i+1]; // сдвиг влево на 1
+    for (i=0; i<inx; i++) xpos[i]=xpos[i+1]; // СЃРґРІРёРі РІР»РµРІРѕ РЅР° 1
     SetLength(xpos,inx+1,inx); 
-	inx--; // индексация начинается с нуля и заканчивается значением inx
+	inx--; // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РЅСѓР»СЏ Рё Р·Р°РєР°РЅС‡РёРІР°РµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµРј inx
 	
 	//for (i=0; i<adapt_x; i++) simplecorrect_meshgen_x(xpos, inx, lb, ls, lw, b, s, w);
 
@@ -349,33 +349,33 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	getchar(); //*/ 
 
 
-    // По оси Oy
-    double *ryboundary; // массив обязательных границ
+    // РџРѕ РѕСЃРё Oy
+    double *ryboundary; // РјР°СЃСЃРёРІ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹С… РіСЂР°РЅРёС†
     int inumboundaryy=1;
-	ryboundary = new double [inumboundaryy+1]; // число границ по оси y
-	ryboundary[0]= b[0].yS; // начало области 
-	ryboundary[inumboundaryy]= b[0].yE; // конец области 
+	ryboundary = new double [inumboundaryy+1]; // С‡РёСЃР»Рѕ РіСЂР°РЅРёС† РїРѕ РѕСЃРё y
+	ryboundary[0]= b[0].yS; // РЅР°С‡Р°Р»Рѕ РѕР±Р»Р°СЃС‚Рё 
+	ryboundary[inumboundaryy]= b[0].yE; // РєРѕРЅРµС† РѕР±Р»Р°СЃС‚Рё 
     
-    // блоки
+    // Р±Р»РѕРєРё
 	for (i=1; i<lb; i++) {
 		addboundary(ryboundary,inumboundaryy,b[i].yS);
         addboundary(ryboundary,inumboundaryy,b[i].yE);
 	}
 
 
-    // упорядочивание по возрастанию
+    // СѓРїРѕСЂСЏРґРѕС‡РёРІР°РЅРёРµ РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ
 	BubbleEnhSort(ryboundary, inumboundaryy);
 
 
-    int *iyintervalcount; // число интервалов
-    iyintervalcount = new int [inumboundaryy]; // на один меньше чем число границ.
+    int *iyintervalcount; // С‡РёСЃР»Рѕ РёРЅС‚РµСЂРІР°Р»РѕРІ
+    iyintervalcount = new int [inumboundaryy]; // РЅР° РѕРґРёРЅ РјРµРЅСЊС€Рµ С‡РµРј С‡РёСЃР»Рѕ РіСЂР°РЅРёС†.
     for (i=0; i<(inumboundaryy); i++) {
          alphascal=(ryboundary[i+1]-ryboundary[i])/(ryboundary[inumboundaryy]-rxboundary[0]);
          inowintervalcount=(int)(alphascal*iny);
 		 if (inowintervalcount < min_elem_in_y_element) inowintervalcount=min_elem_in_y_element; 
          iyintervalcount[i]=inowintervalcount;
 	}
-    // заполнение массива узлов
+    // Р·Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° СѓР·Р»РѕРІ
     iposmark = 1;
 	double dy;
     int iyoldsize=0;
@@ -384,11 +384,11 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	for (i=0; i<inumboundaryy; i++) 
 	{
 
-		// чтобы число узлов було всегда чётное
+		// С‡С‚РѕР±С‹ С‡РёСЃР»Рѕ СѓР·Р»РѕРІ Р±СѓР»Рѕ РІСЃРµРіРґР° С‡С‘С‚РЅРѕРµ
 		if ((iyintervalcount[i]-2)%2==0) iyintervalcount[i]++;
-		int n2=(int)((iyintervalcount[i]-1)/2); // округление в меньшую сторону
+		int n2=(int)((iyintervalcount[i]-1)/2); // РѕРєСЂСѓРіР»РµРЅРёРµ РІ РјРµРЅСЊС€СѓСЋ СЃС‚РѕСЂРѕРЅСѓ
 		double qn2=q;
-		for (int i1=1; i1<n2; i1++) qn2*=q; // возведение в степень.
+		for (int i1=1; i1<n2; i1++) qn2*=q; // РІРѕР·РІРµРґРµРЅРёРµ РІ СЃС‚РµРїРµРЅСЊ.
 		double b1=(ryboundary[i+1]-ryboundary[i])*(q-1.0)/(2.0*(qn2-1.0));
 
         dy=(ryboundary[i+1]-ryboundary[i])/(iyintervalcount[i]-1);
@@ -397,13 +397,13 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
         for (k=iposmark; k<=iposmark+iyintervalcount[i]-2; k++) 
 		{
 			if (!bgeom) {
-				// равномерная сетка
+				// СЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР°
 			    ypos[k]=ryboundary[i]+(k-iposmark)*dy;
 			}
 			else 
 			{
-				// неравномерная сетка
-				// на основе геометрической прогрессии с двумя сгущениями.
+				// РЅРµСЂР°РІРЅРѕРјРµСЂРЅР°СЏ СЃРµС‚РєР°
+				// РЅР° РѕСЃРЅРѕРІРµ РіРµРѕРјРµС‚СЂРёС‡РµСЃРєРѕР№ РїСЂРѕРіСЂРµСЃСЃРёРё СЃ РґРІСѓРјСЏ СЃРіСѓС‰РµРЅРёСЏРјРё.
 				int ic1=k-iposmark;
 				double madd=b1;
 				if (ic1<=n2) {
@@ -421,9 +421,9 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	SetLength(ypos,iyoldsize,iposmark+1);
 	ypos[iposmark]=ryboundary[inumboundaryy];
 	iny=iposmark;
-    for (i=0; i<iny; i++) ypos[i]=ypos[i+1]; // сдвиг влево на 1
+    for (i=0; i<iny; i++) ypos[i]=ypos[i+1]; // СЃРґРІРёРі РІР»РµРІРѕ РЅР° 1
     SetLength(ypos,iny+1,iny); 
-	iny--; // индексация начинается с нуля и заканчивается значением iny
+	iny--; // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РЅСѓР»СЏ Рё Р·Р°РєР°РЅС‡РёРІР°РµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµРј iny
     
     //for (i=0; i<adapt_y; i++) simplecorrect_meshgen_y(ypos, iny, lb, ls, lw, b, s, w);
 
@@ -434,7 +434,7 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
 	}//*/
 
 
-    // Освобождение оперативной памяти.
+    // РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё.
 	delete rxboundary;
 	delete ryboundary;
 	
@@ -443,12 +443,12 @@ void simplemeshgen(double* &xpos, double* &ypos, int &inx, int &iny,
     
 } // simplemeshgen
 
-// удаляет коментарии  из входного файла.
+// СѓРґР°Р»СЏРµС‚ РєРѕРјРµРЅС‚Р°СЂРёРё  РёР· РІС…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°.
 int replace() {
-	 FILE  *fi,  *fo;         /* входной и выходной файл */
-     States State = Normal;   /* текущее состояние */
-     int/*space*/c;                   /* считанный символ (только один текущий!) */
-     /* все, никакие переменные больше не нужны, этих вполне достаточно */
+	 FILE  *fi,  *fo;         /* РІС…РѕРґРЅРѕР№ Рё РІС‹С…РѕРґРЅРѕР№ С„Р°Р№Р» */
+     States State = Normal;   /* С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ */
+     int/*space*/c;                   /* СЃС‡РёС‚Р°РЅРЅС‹Р№ СЃРёРјРІРѕР» (С‚РѕР»СЊРєРѕ РѕРґРёРЅ С‚РµРєСѓС‰РёР№!) */
+     /* РІСЃРµ, РЅРёРєР°РєРёРµ РїРµСЂРµРјРµРЅРЅС‹Рµ Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅС‹, СЌС‚РёС… РІРїРѕР»РЅРµ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ */
      errno_t err;
 	
   
@@ -462,14 +462,14 @@ int replace() {
     return 2;
   }
  
-  while ((c=fgetc(fi)) != EOF)  /* считываем символ и проверяем, не конец ли файла? */
+  while ((c=fgetc(fi)) != EOF)  /* СЃС‡РёС‚С‹РІР°РµРј СЃРёРјРІРѕР» Рё РїСЂРѕРІРµСЂСЏРµРј, РЅРµ РєРѕРЅРµС† Р»Рё С„Р°Р№Р»Р°? */
    {
-    switch (State)   /* если нет, то обрабатываем в зависимости от текущего состояния */
+    switch (State)   /* РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ */
     {
       case Normal:
  
-                        if (c == '/')         /* если встретили слэш, */
-                                 State = Slash;     /* то перешли в соответствующее состояние */
+                        if (c == '/')         /* РµСЃР»Рё РІСЃС‚СЂРµС‚РёР»Рё СЃР»СЌС€, */
+                                 State = Slash;     /* С‚Рѕ РїРµСЂРµС€Р»Рё РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ */
                         else {
                                  fputc(c,fo);
                                  if (c == '"') State=StrState;
@@ -478,7 +478,7 @@ int replace() {
  
                         break;
  
-        case Slash:          /* если предыдущим был слэш, то ... */
+        case Slash:          /* РµСЃР»Рё РїСЂРµРґС‹РґСѓС‰РёРј Р±С‹Р» СЃР»СЌС€, С‚Рѕ ... */
             if (c == '*')
                 State=Comment;
             else if (c == '/') 
@@ -536,13 +536,13 @@ int replace() {
         }
    }      if (State==Slash)   fputc(c,fo);
  
-  fclose(fi);    /* не забывайте закрывать файлы! */
-  fclose(fo);    /* особенно выходной, открытый для записи */
-  return 0;       /* нормальное завершение работы функции*/
+  fclose(fi);    /* РЅРµ Р·Р°Р±С‹РІР°Р№С‚Рµ Р·Р°РєСЂС‹РІР°С‚СЊ С„Р°Р№Р»С‹! */
+  fclose(fo);    /* РѕСЃРѕР±РµРЅРЅРѕ РІС‹С…РѕРґРЅРѕР№, РѕС‚РєСЂС‹С‚С‹Р№ РґР»СЏ Р·Р°РїРёСЃРё */
+  return 0;       /* РЅРѕСЂРјР°Р»СЊРЅРѕРµ Р·Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ С„СѓРЅРєС†РёРё*/
 } // replace 
 
-// считывает объекты из которых состоит сетка.
-// lb - число блоков.
+// СЃС‡РёС‚С‹РІР°РµС‚ РѕР±СЉРµРєС‚С‹ РёР· РєРѕС‚РѕСЂС‹С… СЃРѕСЃС‚РѕРёС‚ СЃРµС‚РєР°.
+// lb - С‡РёСЃР»Рѕ Р±Р»РѕРєРѕРІ.
 int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 
 	FILE *fp;
@@ -556,10 +556,10 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 	int din=0;
 	int imaxblock=0;
 
-	// признак треугольности сетки
+	// РїСЂРёР·РЅР°Рє С‚СЂРµСѓРіРѕР»СЊРЅРѕСЃС‚Рё СЃРµС‚РєРё
 	fscanf_s(fp, "%d", &din);
 	if (din==0) {
-		btriangle=false; // истинная четырёхугольная сетка
+		btriangle=false; // РёСЃС‚РёРЅРЅР°СЏ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅР°СЏ СЃРµС‚РєР°
 	}
 	else {
 		btriangle=true;
@@ -574,19 +574,19 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 	lb=imaxblock;
 
 	fscanf_s(fp, "%d", &din);
-	lbt=din; // число блоков с верхней или нижней границей заданной в виде параболы или синусоиды.
+	lbt=din; // С‡РёСЃР»Рѕ Р±Р»РѕРєРѕРІ СЃ РІРµСЂС…РЅРµР№ РёР»Рё РЅРёР¶РЅРµР№ РіСЂР°РЅРёС†РµР№ Р·Р°РґР°РЅРЅРѕР№ РІ РІРёРґРµ РїР°СЂР°Р±РѕР»С‹ РёР»Рё СЃРёРЅСѓСЃРѕРёРґС‹.
 
 	fscanf_s(fp, "%d", &din);
-	lbsec=din; // число секторов.
+	lbsec=din; // С‡РёСЃР»Рѕ СЃРµРєС‚РѕСЂРѕРІ.
 
-	// Количество новых произвольных выпуклых многоугольников.
+	// РљРѕР»РёС‡РµСЃС‚РІРѕ РЅРѕРІС‹С… РїСЂРѕРёР·РІРѕР»СЊРЅС‹С… РІС‹РїСѓРєР»С‹С… РјРЅРѕРіРѕСѓРіРѕР»СЊРЅРёРєРѕРІ.
     fscanf_s(fp, "%d", &din);
 	lbnew=din; 
 
-	b=new BLOCK[imaxblock]; // выделение памяти под прямоугольные блоки.
-	bt=new BLOCKU[lbt]; // выделение памяти под блоки у которых верхняя граница задана в виде параболы.
-	bsec=new SECTORU[lbsec]; // выделение памяти под сектора. 
-	bnew=new BLOCKNEW[lbnew]; // произвольный выпуклый четырёхугольник.
+	b=new BLOCK[imaxblock]; // РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РїРѕРґ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Рµ Р±Р»РѕРєРё.
+	bt=new BLOCKU[lbt]; // РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РїРѕРґ Р±Р»РѕРєРё Сѓ РєРѕС‚РѕСЂС‹С… РІРµСЂС…РЅСЏСЏ РіСЂР°РЅРёС†Р° Р·Р°РґР°РЅР° РІ РІРёРґРµ РїР°СЂР°Р±РѕР»С‹.
+	bsec=new SECTORU[lbsec]; // РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РїРѕРґ СЃРµРєС‚РѕСЂР°. 
+	bnew=new BLOCKNEW[lbnew]; // РїСЂРѕРёР·РІРѕР»СЊРЅС‹Р№ РІС‹РїСѓРєР»С‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє.
 
 	int ib=0, ibt=0, ibsec=0, ibnew=0;
 
@@ -598,15 +598,15 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 
 
 		if (id==0) {
-			// прямоугольный блок.
+			// РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Р№ Р±Р»РѕРє.
 
             fscanf_s(fp, "%d", &din);
-			b[ib].inhollow=din; // если 0 то hollow block.
+			b[ib].inhollow=din; // РµСЃР»Рё 0 С‚Рѕ hollow block.
 
 			fscanf_s(fp, "%d", &din);
-			b[ib].priority=din; // приоритет блока.
+			b[ib].priority=din; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
-			// размеры блока.
+			// СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°.
 	        fscanf_s(fp, "%f", &fin);
 			b[ib].xS=fin;
             fscanf_s(fp, "%f", &fin);
@@ -616,7 +616,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 			 fscanf_s(fp, "%f", &fin);
 			b[ib].yE=fin;
 
-			// свойства материала.
+			// СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 			fscanf_s(fp, "%f", &fin);
 			b[ib].rho=fin;
 			fscanf_s(fp, "%f", &fin);
@@ -628,20 +628,20 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 		}
 
 		if (id==1) {
-			// прямоугольный блок.
+			// РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Р№ Р±Р»РѕРє.
 
             fscanf_s(fp, "%d", &din);
-			bt[ibt].inhollow=din; // если 0 то hollow block.
+			bt[ibt].inhollow=din; // РµСЃР»Рё 0 С‚Рѕ hollow block.
 
 			fscanf_s(fp, "%d", &din);
-			bt[ibt].priority=din; // приоритет блока.
+			bt[ibt].priority=din; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
 			fscanf_s(fp, "%d", &din);
 			bt[ibt].inx=din;
 			fscanf_s(fp, "%d", &din);
 			bt[ibt].iny=din;
 
-			// размеры блока.
+			// СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°.
 	        fscanf_s(fp, "%f", &fin);
 			bt[ibt].xS=fin;
             fscanf_s(fp, "%f", &fin);
@@ -675,7 +675,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 				bt[ibt].angleEt=0.0;
 			}
 			else if (bt[ibt].icurvetop==MYPARABOLA) {
-			   // парабола.
+			   // РїР°СЂР°Р±РѕР»Р°.
 			   fscanf_s(fp, "%f", &fin);
 			   bt[ibt].at=fin;
 			   fscanf_s(fp, "%f", &fin);
@@ -735,7 +735,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 				 bt[ibt].ct=0.0;
 			}
 		    else {
-				// парабола. (по умолчанию)
+				// РїР°СЂР°Р±РѕР»Р°. (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
 			   fscanf_s(fp, "%f", &fin);
 			   bt[ibt].at=fin;
 			   fscanf_s(fp, "%f", &fin);
@@ -765,7 +765,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 			    bt[ibt].dxb=0.0;
 			}
 			else if (bt[ibt].icurvebottom==MYPARABOLA) {
-			   // парабола.
+			   // РїР°СЂР°Р±РѕР»Р°.
 			   fscanf_s(fp, "%f", &fin);
 			   bt[ibt].ab=fin;
 			   fscanf_s(fp, "%f", &fin);
@@ -791,7 +791,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 				 bt[ibt].cb=0.0;
 			}
 			else {
-				// парабола. (по умолчанию)
+				// РїР°СЂР°Р±РѕР»Р°. (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
 			   fscanf_s(fp, "%f", &fin);
 			   bt[ibt].ab=fin;
 			   fscanf_s(fp, "%f", &fin);
@@ -805,7 +805,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 			   bt[ibt].icurvebottom=MYPARABOLA;
 			}
 
-			// свойства материала.
+			// СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 			fscanf_s(fp, "%f", &fin);
 			bt[ibt].rho=fin;
 			fscanf_s(fp, "%f", &fin);
@@ -817,20 +817,20 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 		}
 
 		if (id==2) {
-			// сектор.
+			// СЃРµРєС‚РѕСЂ.
 
             fscanf_s(fp, "%d", &din);
-			bsec[ibsec].inhollow=din; // если 0 то hollow block.
+			bsec[ibsec].inhollow=din; // РµСЃР»Рё 0 С‚Рѕ hollow block.
 
 			fscanf_s(fp, "%d", &din);
-			bsec[ibsec].priority=din; // приоритет блока.
+			bsec[ibsec].priority=din; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
 			fscanf_s(fp, "%d", &din);
 			bsec[ibsec].inr=din;
 			fscanf_s(fp, "%d", &din);
 			bsec[ibsec].intheta=din;
 
-			// размеры блока.
+			// СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°.
 	        fscanf_s(fp, "%f", &fin);
 			bsec[ibsec].xC=fin;
             fscanf_s(fp, "%f", &fin);
@@ -845,9 +845,9 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 			bsec[ibsec].thetamax=fin;
 
 			fscanf_s(fp, "%d", &din);
-			bsec[ibsec].ip=din; // идентификатор перхода. 
+			bsec[ibsec].ip=din; // РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРµСЂС…РѕРґР°. 
 
-			// свойства материала.
+			// СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 			fscanf_s(fp, "%f", &fin);
 			bsec[ibsec].rho=fin;
 			fscanf_s(fp, "%f", &fin);
@@ -859,19 +859,19 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 		}
 
 		if (id==3) {
-			// произвольный выпуклый четырёхугольник.
+			// РїСЂРѕРёР·РІРѕР»СЊРЅС‹Р№ РІС‹РїСѓРєР»С‹Р№ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРє.
 			fscanf_s(fp, "%d", &din);
-			bnew[ibnew].inhollow=din; // если 0 то hollow block.
+			bnew[ibnew].inhollow=din; // РµСЃР»Рё 0 С‚Рѕ hollow block.
 
 			fscanf_s(fp, "%d", &din);
-			bnew[ibnew].priority=din; // приоритет блока.
+			bnew[ibnew].priority=din; // РїСЂРёРѕСЂРёС‚РµС‚ Р±Р»РѕРєР°.
 
 			fscanf_s(fp, "%d", &din);
 			bnew[ibnew].n1=din;
 			fscanf_s(fp, "%d", &din);
 			bnew[ibnew].n2=din;
 
-			// размеры блока.
+			// СЂР°Р·РјРµСЂС‹ Р±Р»РѕРєР°.
 	        fscanf_s(fp, "%f", &fin);
 			bnew[ibnew].x1=fin;
             fscanf_s(fp, "%f", &fin);
@@ -889,7 +889,7 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
             fscanf_s(fp, "%f", &fin);
 			bnew[ibnew].y4=fin;
 
-			// свойства материала.
+			// СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р°.
 			fscanf_s(fp, "%f", &fin);
 			bnew[ibnew].rho=fin;
 			fscanf_s(fp, "%f", &fin);
@@ -905,25 +905,25 @@ int readobj(int &inx, int &iny, int &lb, int &lbt, int &lbsec, int &lbnew) {
 	}
 		
 
-	fclose(fp); // закрытие файла
+	fclose(fp); // Р·Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
 	return 0;
 }
 
-// выясняет в каком блоке находится точка (xpos, ypos).
+// РІС‹СЏСЃРЅСЏРµС‚ РІ РєР°РєРѕРј Р±Р»РѕРєРµ РЅР°С…РѕРґРёС‚СЃСЏ С‚РѕС‡РєР° (xpos, ypos).
 void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 				double xpos, double ypos, double theta, int &it) {
-	it=-1;  // изменяется от -1 (не принадлежит блокам) до lb+lbt-1.
-	// если лежит от 0 до lb-1 то принадлежит прямоугольному блоку.
-	// если лежит от  lb до lbt-1 то принадлежит top блоку.
+	it=-1;  // РёР·РјРµРЅСЏРµС‚СЃСЏ РѕС‚ -1 (РЅРµ РїСЂРёРЅР°РґР»РµР¶РёС‚ Р±Р»РѕРєР°Рј) РґРѕ lb+lbt-1.
+	// РµСЃР»Рё Р»РµР¶РёС‚ РѕС‚ 0 РґРѕ lb-1 С‚Рѕ РїСЂРёРЅР°РґР»РµР¶РёС‚ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕРјСѓ Р±Р»РѕРєСѓ.
+	// РµСЃР»Рё Р»РµР¶РёС‚ РѕС‚  lb РґРѕ lbt-1 С‚Рѕ РїСЂРёРЅР°РґР»РµР¶РёС‚ top Р±Р»РѕРєСѓ.
 	for (int iprior=0; iprior<10000; iprior++) {
-		// iprior - текущее значение приоритета.
+		// iprior - С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёРµ РїСЂРёРѕСЂРёС‚РµС‚Р°.
 	    for (int i=0; i<lb; i++) {
 		    if (b[i].priority==iprior) {
 		       if ((xpos>b[i].xS)&&(xpos<b[i].xE)&&(ypos>b[i].yS)&&(ypos<b[i].yE)) {
 			      it=i;
 		       }
 		    }
-	    } // прямоугольные блоки.
+	    } // РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Рµ Р±Р»РѕРєРё.
 		for (int i=0; i<lbt; i++) {
 			if  (bt[i].priority==iprior) {
 
@@ -941,7 +941,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 				     }
 					 else if (bt[i].icurvetop==MYCIRCLE) {
 						 const double MPI=3.14159265;
-						 // внимание если убрать последнее условие проявится скрытая ошибка которая ещё не исправлена.
+						 // РІРЅРёРјР°РЅРёРµ РµСЃР»Рё СѓР±СЂР°С‚СЊ РїРѕСЃР»РµРґРЅРµРµ СѓСЃР»РѕРІРёРµ РїСЂРѕСЏРІРёС‚СЃСЏ СЃРєСЂС‹С‚Р°СЏ РѕС€РёР±РєР° РєРѕС‚РѕСЂР°СЏ РµС‰С‘ РЅРµ РёСЃРїСЂР°РІР»РµРЅР°.
 						 if ((xpos>bt[i].xS)&&(xpos<bt[i].xE)&&(ypos>bt[i].yS)&&(ypos<(bt[i].yCt+bt[i].rt*sin(MPI*theta/180.0)))&&(ypos<bt[i].yE)) {
 					       it=lb+i;
 				        }
@@ -1003,7 +1003,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		    if (bsec[i].priority==iprior) {
 				const double MPI=3.14159265;
 				if (bsec[i].ip==0) {
-					// сектор ограниченный двумя окружностями.
+					// СЃРµРєС‚РѕСЂ РѕРіСЂР°РЅРёС‡РµРЅРЅС‹Р№ РґРІСѓРјСЏ РѕРєСЂСѓР¶РЅРѕСЃС‚СЏРјРё.
 				     if ((sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))>bsec[i].rmin)&&
 					    (sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))<bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax))/*
@@ -1013,9 +1013,9 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		             }
 				}
 				if (bsec[i].ip==1) {
-					// внутренний радиус заменяется горизотальной или вертикальной прямой.
+					// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ Р·Р°РјРµРЅСЏРµС‚СЃСЏ РіРѕСЂРёР·РѕС‚Р°Р»СЊРЅРѕР№ РёР»Рё РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїСЂСЏРјРѕР№.
 					if ((theta>-45.0)&&(theta<45.0)) {
-						// внутренний радиус ограничен вертикальной линией.
+						// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
                         if ((xpos > bsec[i].rmin)&&
 					        (sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))<bsec[i].rmax)&&
 					        (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax))
@@ -1024,7 +1024,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                    }
 					}
 					else if ((theta>-135.0)&&(theta<-45.0)) {
-						// внутренний радиус ограничен горизонтальной линией
+						// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((ypos<bsec[i].rmin)&&
 					        (sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))<bsec[i].rmax)&&
 					        (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax))
@@ -1033,7 +1033,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                    }
 					}
 					else if ((theta>45.0)&&(theta<135.0)) {
-						// внутренний радиус ограничен горизонтальной линией
+						// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((ypos>bsec[i].rmin)&&
 					        (sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))<bsec[i].rmax)&&
 					        (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax))
@@ -1042,7 +1042,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                    }
 					}
 					else if ((theta>135.0)&&(theta<225.0)) {
-						// внутренний радиус ограничен вертикальной линией.
+						// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
 						if ((xpos<bsec[i].rmin)&&
 					        (sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))<bsec[i].rmax)&&
 					        (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax))
@@ -1052,9 +1052,9 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 					}
 				}
 				if (bsec[i].ip==2) {
-					// внешний радиус заменяется горизотальной или вертикальной прямой.
+					// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ Р·Р°РјРµРЅСЏРµС‚СЃСЏ РіРѕСЂРёР·РѕС‚Р°Р»СЊРЅРѕР№ РёР»Рё РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїСЂСЏРјРѕР№.
 					if ((theta>-45.0)&&(theta<45.0)) {
-						// внешний радиус ограничен вертикальной линией.
+						// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
 						if ((sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))>bsec[i].rmin)&&
 					    (xpos<bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1062,7 +1062,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                }
 					}
 					else if ((theta>-135.0)&&(theta<-45.0)) {
-						// внешний радиус ограничен горизонтальной линией
+						// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))>bsec[i].rmin)&&
 					    (ypos>bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1070,7 +1070,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                }
 					}
 					else if ((theta>45.0)&&(theta<135.0)) {
-						// внешний радиус ограничен горизонтальной линией
+						// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))>bsec[i].rmin)&&
 					    (ypos<bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1078,7 +1078,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                }
 					}
 					else if ((theta>135.0)&&(theta<225.0)) {
-						// внешний радиус ограничен вертикальной линией.
+						// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ РѕРіСЂР°РЅРёС‡РµРЅ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
 						if ((sqrt((xpos-bsec[i].xC)*(xpos-bsec[i].xC)+(ypos-bsec[i].yC)*(ypos-bsec[i].yC))>bsec[i].rmin)&&
 					    (xpos>bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1087,9 +1087,9 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 					}
 				}
 				if (bsec[i].ip==3) {
-					// внутренний и внешний радиус заменяется горизотальной или вертикальной прямой.
+					// РІРЅСѓС‚СЂРµРЅРЅРёР№ Рё РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ Р·Р°РјРµРЅСЏРµС‚СЃСЏ РіРѕСЂРёР·РѕС‚Р°Р»СЊРЅРѕР№ РёР»Рё РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ РїСЂСЏРјРѕР№.
                     if ((theta>-45.0)&&(theta<45.0)) {
-                        // внешний и внутренний радиусы ограничены вертикальной линией.
+                        // РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃС‹ РѕРіСЂР°РЅРёС‡РµРЅС‹ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
 						if ((xpos > bsec[i].rmin)&&
 					       (xpos<bsec[i].rmax)&&
 					       (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1097,7 +1097,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                   }
 					}
 					else if ((theta>-135.0)&&(theta<-45.0)) {
-						// внешний и внутренний  радиусы ограничены горизонтальной линией
+						// РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№  СЂР°РґРёСѓСЃС‹ РѕРіСЂР°РЅРёС‡РµРЅС‹ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((ypos<bsec[i].rmin)&&
 					    (ypos>bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1105,7 +1105,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                }
 					}
 					else if ((theta>45.0)&&(theta<135.0)) {
-						// внешний и внутренний радиусы ограничен горизонтальной линией
+						// РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃС‹ РѕРіСЂР°РЅРёС‡РµРЅ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№
 						if ((ypos>bsec[i].rmin)&&
 					    (ypos<bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1113,7 +1113,7 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 		                }
 					}
 					else if ((theta>135.0)&&(theta<225.0)) {
-						// внешний и внутренний радиусы ограничен вертикальной линией.
+						// РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃС‹ РѕРіСЂР°РЅРёС‡РµРЅ РІРµСЂС‚РёРєР°Р»СЊРЅРѕР№ Р»РёРЅРёРµР№.
 						if ((xpos<bsec[i].rmin)&&
 					    (xpos>bsec[i].rmax)&&
 					    (theta>bsec[i].thetamin)&&(theta<=bsec[i].thetamax)) {
@@ -1122,12 +1122,12 @@ void inregblock(int lb, BLOCK* b, int lbt, BLOCKU* bt, int lbsec, SECTORU* bsec,
 					}
 				}
 		    }
-	    } // прямоугольные блоки.
+	    } // РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹Рµ Р±Р»РѕРєРё.
 	}
-	// it номер блока в котором находится данная точка.
+	// it РЅРѕРјРµСЂ Р±Р»РѕРєР° РІ РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РґР°РЅРЅР°СЏ С‚РѕС‡РєР°.
 } // inregblock
 
-// добавляет новую вершину ели её ещё не было.
+// РґРѕР±Р°РІР»СЏРµС‚ РЅРѕРІСѓСЋ РІРµСЂС€РёРЅСѓ РµР»Рё РµС‘ РµС‰С‘ РЅРµ Р±С‹Р»Рѕ.
 void addvertexnumber(int* &unicvertexid, int* &ix, int* &iy, int isize, int ivertex, int ip, int jp) {
     bool found=false;
 
@@ -1146,12 +1146,12 @@ void addvertexnumber(int* &unicvertexid, int* &ix, int* &iy, int isize, int iver
 	}
 }
 
-// добавляет новую вершину если её ещё не было.
-// структурированная скошенная четырёхугольная сетка.
+// РґРѕР±Р°РІР»СЏРµС‚ РЅРѕРІСѓСЋ РІРµСЂС€РёРЅСѓ РµСЃР»Рё РµС‘ РµС‰С‘ РЅРµ Р±С‹Р»Рѕ.
+// СЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅР°СЏ СЃРєРѕС€РµРЅРЅР°СЏ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅР°СЏ СЃРµС‚РєР°.
 void addvertexnumberreal(int* &unicvertexid, Real* &rx, Real* &ry, int isize, int ivertex, Real rpx, Real rpy, Real myepsilon) {
     bool found=false;
-    //const double myepsilon=0.0001; //1e-20; // точность определения вещественного нуля.
-	// ivertex - любое положительное число, оно по сути нужно только для того чтобы распознать конец массива.
+    //const double myepsilon=0.0001; //1e-20; // С‚РѕС‡РЅРѕСЃС‚СЊ РѕРїСЂРµРґРµР»РµРЅРёСЏ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ РЅСѓР»СЏ.
+	// ivertex - Р»СЋР±РѕРµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ С‡РёСЃР»Рѕ, РѕРЅРѕ РїРѕ СЃСѓС‚Рё РЅСѓР¶РЅРѕ С‚РѕР»СЊРєРѕ РґР»СЏ С‚РѕРіРѕ С‡С‚РѕР±С‹ СЂР°СЃРїРѕР·РЅР°С‚СЊ РєРѕРЅРµС† РјР°СЃСЃРёРІР°.
 
 
 	for (int i=0; i<isize; i++) {
@@ -1170,41 +1170,41 @@ void addvertexnumberreal(int* &unicvertexid, Real* &rx, Real* &ry, int isize, in
 	}
 } // addvertexnumberreal
 
-// ищет порядковый номер добавленой вершины в списке уникальных вершин.
+// РёС‰РµС‚ РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РґРѕР±Р°РІР»РµРЅРѕР№ РІРµСЂС€РёРЅС‹ РІ СЃРїРёСЃРєРµ СѓРЅРёРєР°Р»СЊРЅС‹С… РІРµСЂС€РёРЅ.
 int findvertex(int* &unicvertexid,int isize, int ivertex) {
-	int ir=-1; // если возвратит это значение то такойвершины просто несуществует.
+	int ir=-1; // РµСЃР»Рё РІРѕР·РІСЂР°С‚РёС‚ СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ С‚Рѕ С‚Р°РєРѕР№РІРµСЂС€РёРЅС‹ РїСЂРѕСЃС‚Рѕ РЅРµСЃСѓС‰РµСЃС‚РІСѓРµС‚.
 	for (int i=0; i<isize; i++) {
 		if (unicvertexid[i]==ivertex) {
 			ir=i;
-			break; // досрочное прерывание цикла.
+			break; // РґРѕСЃСЂРѕС‡РЅРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ С†РёРєР»Р°.
 		}
 	}
 	return ir;
-	// нумерация всегда начинается с 1 т.к. нулевой индекс всегда заполнен -1.
+	// РЅСѓРјРµСЂР°С†РёСЏ РІСЃРµРіРґР° РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 1 С‚.Рє. РЅСѓР»РµРІРѕР№ РёРЅРґРµРєСЃ РІСЃРµРіРґР° Р·Р°РїРѕР»РЅРµРЅ -1.
 }
 
-// ищет порядковый номер добавленой вершины в списке уникальных вершин.
+// РёС‰РµС‚ РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РґРѕР±Р°РІР»РµРЅРѕР№ РІРµСЂС€РёРЅС‹ РІ СЃРїРёСЃРєРµ СѓРЅРёРєР°Р»СЊРЅС‹С… РІРµСЂС€РёРЅ.
 int findvertexreal(int* &unicvertexid, Real* &rx, Real* &ry, int isize, Real rpx, Real rpy, Real myepsilon) {
-	int ir=-1; // если возвратит это значение то такойвершины просто несуществует.
+	int ir=-1; // РµСЃР»Рё РІРѕР·РІСЂР°С‚РёС‚ СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ С‚Рѕ С‚Р°РєРѕР№РІРµСЂС€РёРЅС‹ РїСЂРѕСЃС‚Рѕ РЅРµСЃСѓС‰РµСЃС‚РІСѓРµС‚.
 
-	//const double myepsilon=0.0001; //1e-20; // точность определения вещественного нуля.
+	//const double myepsilon=0.0001; //1e-20; // С‚РѕС‡РЅРѕСЃС‚СЊ РѕРїСЂРµРґРµР»РµРЅРёСЏ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРіРѕ РЅСѓР»СЏ.
 
 	for (int i=0; i<isize; i++) {
 		/*
 		if (unicvertexid[i]==ivertex) {
 			ir=i;
-			break; // досрочное прерывание цикла.
+			break; // РґРѕСЃСЂРѕС‡РЅРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ С†РёРєР»Р°.
 		}*/
         if ((fabs(rx[i]-rpx)<myepsilon)&&(fabs(ry[i]-rpy)<myepsilon)) {
 			ir=i;
-			break; // досрочное прерывание цикла.
+			break; // РґРѕСЃСЂРѕС‡РЅРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ С†РёРєР»Р°.
 		}
 	}
 	return ir;
-	// нумерация всегда начинается с 1 т.к. нулевой индекс всегда заполнен -1.
+	// РЅСѓРјРµСЂР°С†РёСЏ РІСЃРµРіРґР° РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 1 С‚.Рє. РЅСѓР»РµРІРѕР№ РёРЅРґРµРєСЃ РІСЃРµРіРґР° Р·Р°РїРѕР»РЅРµРЅ -1.
 }
 
-// постронение структуры сетки для прямоугольных элементов.
+// РїРѕСЃС‚СЂРѕРЅРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЃРµС‚РєРё РґР»СЏ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ.
 void constructtaskdat(MYTASK_DATA &taskdat,
 					  Real* xpos, Real* ypos,
 					  int inx, int iny, 
@@ -1213,8 +1213,8 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 					  int lbsec, SECTORU* bsec) {
 
 
-	taskdat.nve=4; // четырёхугольные элементы.
-	// отображение (i,j)->k  : k=i+j*(inx+1).
+	taskdat.nve=4; // С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹.
+	// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ (i,j)->k  : k=i+j*(inx+1).
 	// i=0..inx, j=0..iny.
 
 	int isizeuvid=(inx+1)*(iny+1)+1;
@@ -1232,9 +1232,9 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 	Real *lam = new Real [isizeuvid];
 
 	for (int i=0; i<isizeuvid; i++) {
-		unicvertexid[i]=-1; // несуществующие номера вершин.
+		unicvertexid[i]=-1; // РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ РЅРѕРјРµСЂР° РІРµСЂС€РёРЅ.
 
-		// несуществующие свойства материалов.
+		// РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»РѕРІ.
 		rho[i]=-1.0;
 		cp[i]=-1.0;
 		lam[i]=-1.0;
@@ -1242,25 +1242,25 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 
 	int ie=1;
 
-	// сканируем сетку :
+	// СЃРєР°РЅРёСЂСѓРµРј СЃРµС‚РєСѓ :
 	for (int i=0; i<inx; i++) {
 		for (int j=0; j<iny; j++) {
-			Real xc, yc; // точка пересечения диагоналей.
+			Real xc, yc; // С‚РѕС‡РєР° РїРµСЂРµСЃРµС‡РµРЅРёСЏ РґРёР°РіРѕРЅР°Р»РµР№.
 			xc=0.5*(xpos[i]+xpos[i+1]);
 			yc=0.5*(ypos[j]+ypos[j+1]);
 			int it=-1;
 			inregblock(lb, b, lbt, bt, lbsec, bsec, xc, yc, -10000.0, it);
 			if ((it>=0)&&(it<lb)) {
 				if (b[it].inhollow==1) {
-					// не hollow блок.
+					// РЅРµ hollow Р±Р»РѕРє.
 
-			        // против часовой стрелки упорядочены.
+			        // РїСЂРѕС‚РёРІ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹.
 			        addvertexnumber(unicvertexid, ix, iy, isizeuvid, i+j*(inx+1), i, j);
 			        addvertexnumber(unicvertexid, ix, iy, isizeuvid, i+1+j*(inx+1), i+1, j);
 			        addvertexnumber(unicvertexid, ix, iy, isizeuvid, i+1+(j+1)*(inx+1), i+1, j+1);
 			        addvertexnumber(unicvertexid, ix, iy, isizeuvid, i+(j+1)*(inx+1), i, j+1);
  
-				    nvtx[0][ie]=findvertex(unicvertexid,isizeuvid, i+j*(inx+1)); // индексация начинается с единицы (это важно)
+				    nvtx[0][ie]=findvertex(unicvertexid,isizeuvid, i+j*(inx+1)); // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РµРґРёРЅРёС†С‹ (СЌС‚Рѕ РІР°Р¶РЅРѕ)
 				    nvtx[1][ie]=findvertex(unicvertexid,isizeuvid, i+1+j*(inx+1));
 				    nvtx[2][ie]=findvertex(unicvertexid,isizeuvid, i+1+(j+1)*(inx+1));
 				    nvtx[3][ie]=findvertex(unicvertexid,isizeuvid, i+(j+1)*(inx+1));
@@ -1277,8 +1277,8 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 		}
 	}
 
-	// заполнение координат узлов:
-	// начало.
+	// Р·Р°РїРѕР»РЅРµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚ СѓР·Р»РѕРІ:
+	// РЅР°С‡Р°Р»Рѕ.
 	int ic1=0;
 	for (int i=0; i<isizeuvid; i++) {
 		if (unicvertexid[i]>-1) {
@@ -1293,10 +1293,10 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 		taskdat.x[i]=xpos[ix[i+1]];
 		taskdat.y[i]=ypos[iy[i+1]];
 	}
-	// конец.
+	// РєРѕРЅРµС†.
 
-	// заполнение элементов.
-	// начало.
+	// Р·Р°РїРѕР»РЅРµРЅРёРµ СЌР»РµРјРµРЅС‚РѕРІ.
+	// РЅР°С‡Р°Р»Рѕ.
 	taskdat.nelmts=ie-1;
 	taskdat.maxelm=ie-1;
 	taskdat.rho=new Real[ie-1];
@@ -1317,12 +1317,12 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 		taskdat.nvtx[2][i]=nvtx[2][i+1];
 		taskdat.nvtx[3][i]=nvtx[3][i+1];
 	}
-	// конец.
+	// РєРѕРЅРµС†.
 
-	// Грниные условия в области по умолчанию.
-	// начало.
+	// Р“СЂРЅРёРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РІ РѕР±Р»Р°СЃС‚Рё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.
+	// РЅР°С‡Р°Р»Рѕ.
 
-	// Граничные условия по умолчанию.
+	// Р“СЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.
 	taskdat.constr=new bool*[3];
 	taskdat.potent=new Real*[3];
 	for (int i=0; i<VAR_COUNT; i++) {
@@ -1330,18 +1330,18 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 		taskdat.potent[i]=new Real[ic1];
 	}
 
-	// инициализация. Всюду однородные условия Неймана.
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ. Р’СЃСЋРґСѓ РѕРґРЅРѕСЂРѕРґРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РќРµР№РјР°РЅР°.
 	for (int i=0; i<VAR_COUNT; i++) {
 		for (int j=0; j<ic1; j++) {
-			taskdat.constr[i][j]=false; // всюду условия Неймана.
+			taskdat.constr[i][j]=false; // РІСЃСЋРґСѓ СѓСЃР»РѕРІРёСЏ РќРµР№РјР°РЅР°.
 			taskdat.potent[i][j]=0.0;
 		}
 	}
 
-	// конец.
+	// РєРѕРЅРµС†.
 
 
-	// Освобождение оперативной памяти.
+	// РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё.
 	delete ix;
 	delete iy;
 	delete unicvertexid;
@@ -1357,7 +1357,7 @@ void constructtaskdat(MYTASK_DATA &taskdat,
 
 } // constructtaskdat
 
-// постронение структуры сетки для top элемента.
+// РїРѕСЃС‚СЂРѕРЅРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЃРµС‚РєРё РґР»СЏ top СЌР»РµРјРµРЅС‚Р°.
 void constructtaskdattopelem(MYTASK_DATA &taskdat, 
 					  int lb, BLOCK* b, 
 					  int lbt, BLOCKU* bt,
@@ -1365,8 +1365,8 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 					  int lbnew, BLOCKNEW* bnew,
 					   Real* xpos) 
 {
-	taskdat.nve=4; // четырёхугольные элементы.
-	// отображение (i,j)->k  : k=i+j*(inx+1).
+	taskdat.nve=4; // С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹.
+	// РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ (i,j)->k  : k=i+j*(inx+1).
 	// i=0..inx, j=0..iny.
 
 	int inxgl=300;
@@ -1377,8 +1377,8 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 	double* rx=new double [isizeuvid];
 	double* ry=new double [isizeuvid];
 	for (int i=0; i<isizeuvid; i++) {
-		rx[i]=1e20; // несуществующие значения
-		ry[i]=1e20; // инициализация.
+		rx[i]=1e20; // РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ
+		ry[i]=1e20; // РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ.
 	}
 	
 	int **nvtx=new int*[taskdat.nve];
@@ -1391,9 +1391,9 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 	Real *lam = new Real [isizeuvid];
 
 	for (int i=0; i<isizeuvid; i++) {
-		unicvertexid[i]=-1; // несуществующие номера вершин.
+		unicvertexid[i]=-1; // РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ РЅРѕРјРµСЂР° РІРµСЂС€РёРЅ.
 
-		// несуществующие свойства материалов.
+		// РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»РѕРІ.
 		rho[i]=-1.0;
 		cp[i]=-1.0;
 		lam[i]=-1.0;
@@ -1406,11 +1406,11 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 		int iny=bnew[idnew].n2;
 		
 
-		// сканируем сетку :
+		// СЃРєР°РЅРёСЂСѓРµРј СЃРµС‚РєСѓ :
 	    for (int i=0; i<inx; i++) {
 		    for (int j=0; j<iny; j++) {
 
-				// Сначала разбиваем эталонный квадрат (-1 +1)x(-1 +1)
+				// РЎРЅР°С‡Р°Р»Р° СЂР°Р·Р±РёРІР°РµРј СЌС‚Р°Р»РѕРЅРЅС‹Р№ РєРІР°РґСЂР°С‚ (-1 +1)x(-1 +1)
 
 				Real x1iso, y1iso, x2iso, y2iso, x3iso, y3iso, x4iso, y4iso;
                 Real x1, y1, x2, y2, x3, y3, x4, y4;
@@ -1447,22 +1447,22 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 				y4=yA*0.25*(1.0+x4iso)*(1.0+y4iso)+yB*0.25*(1.0-x4iso)*(1.0+y4iso)+yC*0.25*(1.0-x4iso)*(1.0-y4iso)+yD*0.25*(1.0+x4iso)*(1.0-y4iso);
 			    
                  
-				Real xc, yc; // центр масс выпуклого четырёхугольника.
+				Real xc, yc; // С†РµРЅС‚СЂ РјР°СЃСЃ РІС‹РїСѓРєР»РѕРіРѕ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРєР°.
                 xc=0.25*(x1+x2+x3+x4);
 	            yc=0.25*(y1+y2+y3+y4);
 
 				if (bnew[idnew].inhollow==1) {
-					// не hollow блок.
+					// РЅРµ hollow Р±Р»РѕРє.
 
 					double myeps=0.1*(fmin(fmin(fmin(fabs(x1-xc),fabs(x2-xc)),fmin(fabs(x3-xc),fabs(x4-xc))),fmin(fmin(fabs(y1-yc),fabs(y2-yc)),fmin(fabs(y3-yc),fabs(y4-yc)))));
 
-			        // против часовой стрелки упорядочены.
+			        // РїСЂРѕС‚РёРІ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹.
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+j*(inx+1), x1, y1, myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+j*(inx+1), x2, y2, myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+(j+1)*(inx+1), x3, y3,  myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+(j+1)*(inx+1), x4, y4,  myeps);
  
-				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1, myeps); // индексация начинается с единицы (это важно)
+				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1, myeps); // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РµРґРёРЅРёС†С‹ (СЌС‚Рѕ РІР°Р¶РЅРѕ)
 				    nvtx[1][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x2,y2, myeps);
 				    nvtx[2][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x3,y3, myeps);
 				    nvtx[3][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x4,y4, myeps);
@@ -1489,7 +1489,7 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 	int inx=bt[idtop].inx;
 	int iny=bt[idtop].iny;
 
-	// сканируем сетку :
+	// СЃРєР°РЅРёСЂСѓРµРј СЃРµС‚РєСѓ :
 	for (int i=0; i<inx; i++) {
 		for (int j=0; j<iny; j++) {
 
@@ -1591,13 +1591,13 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 			    }
 			}
 
-			Real xc, yc; // центр масс выпуклого четырёхугольника.
+			Real xc, yc; // С†РµРЅС‚СЂ РјР°СЃСЃ РІС‹РїСѓРєР»РѕРіРѕ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРєР°.
             xc=0.25*(x1+x2+x3+x4);
 	        yc=0.25*(y1+y2+y3+y4);
 			
 			int it=-1;
 			if (bt[idtop].icurvetop==MYCIRCLE) {
-				// здесь важен угол
+				// Р·РґРµСЃСЊ РІР°Р¶РµРЅ СѓРіРѕР»
 				inregblock(lb, b, lbt, bt, lbsec, bsec, xc, yc,bt[idtop].angleSt+0.5*(i*((double)((bt[idtop].angleEt-bt[idtop].angleSt)/inx)) +(i+1)*((double)((bt[idtop].angleEt-bt[idtop].angleSt)/inx))), it);
 			}
 			else {
@@ -1605,17 +1605,17 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 			}
 			if (it==idtop+lb) {
 				if (bt[idtop].inhollow==1) {
-					// не hollow блок.
+					// РЅРµ hollow Р±Р»РѕРє.
 
 					double myeps=0.1*(fmin(fmin(fmin(fabs(x1-xc),fabs(x2-xc)),fmin(fabs(x3-xc),fabs(x4-xc))),fmin(fmin(fabs(y1-yc),fabs(y2-yc)),fmin(fabs(y3-yc),fabs(y4-yc)))));
 
-			        // против часовой стрелки упорядочены.
+			        // РїСЂРѕС‚РёРІ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹.
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+j*(inx+1), x1, y1, myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+j*(inx+1), x2, y2, myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+(j+1)*(inx+1), x3, y3,  myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+(j+1)*(inx+1), x4, y4,  myeps);
  
-				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1, myeps); // индексация начинается с единицы (это важно)
+				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1, myeps); // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РµРґРёРЅРёС†С‹ (СЌС‚Рѕ РІР°Р¶РЅРѕ)
 				    nvtx[1][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x2,y2, myeps);
 				    nvtx[2][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x3,y3, myeps);
 				    nvtx[3][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x4,y4, myeps);
@@ -1640,7 +1640,7 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 		int inx=bsec[idsec].inr;
 		int iny=bsec[idsec].intheta;
 
-	// сканируем сетку :
+	// СЃРєР°РЅРёСЂСѓРµРј СЃРµС‚РєСѓ :
 	for (int i=0; i<inx; i++) { // radius
 		for (int j=0; j<iny; j++) { // angle
 
@@ -1667,7 +1667,7 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 			   y4=bsec[idsec].yC+(bsec[idsec].rmin+i*((double)((bsec[idsec].rmax-bsec[idsec].rmin)/inx)))*sin(t2);
 			}
 			else if (bsec[idsec].ip==1) {
-				// внутренний радиус прямая.
+				// РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РїСЂСЏРјР°СЏ.
 				
 				double rmin1=0.0, rmin2=0.0;
 
@@ -1774,7 +1774,7 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 
 			}
 			else if (bsec[idsec].ip==2) {
-				// внешний радиус прямая.
+				// РІРЅРµС€РЅРёР№ СЂР°РґРёСѓСЃ РїСЂСЏРјР°СЏ.
 
 				double rmin1=bsec[idsec].rmin, rmin2=bsec[idsec].rmin;
 				double rmax1=0.0, rmax2=0.0;
@@ -1875,9 +1875,9 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 			}
 			else if (bsec[idsec].ip==3) {
 
-				// Это ничто иное как трапеция такой элемент должен быть предусмотрен раньше.
-				// Конфузор, Диффузор.
-				// внешний и внутренний радиус прямая.
+				// Р­С‚Рѕ РЅРёС‡С‚Рѕ РёРЅРѕРµ РєР°Рє С‚СЂР°РїРµС†РёСЏ С‚Р°РєРѕР№ СЌР»РµРјРµРЅС‚ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РїСЂРµРґСѓСЃРјРѕС‚СЂРµРЅ СЂР°РЅСЊС€Рµ.
+				// РљРѕРЅС„СѓР·РѕСЂ, Р”РёС„С„СѓР·РѕСЂ.
+				// РІРЅРµС€РЅРёР№ Рё РІРЅСѓС‚СЂРµРЅРЅРёР№ СЂР°РґРёСѓСЃ РїСЂСЏРјР°СЏ.
 
 				if ((tavg>-45.0)&&(tavg<45.0)) {
 
@@ -1891,7 +1891,7 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 				}
 			}
             
-			Real xc, yc; // центр масс выпуклого четырёхугольника.
+			Real xc, yc; // С†РµРЅС‚СЂ РјР°СЃСЃ РІС‹РїСѓРєР»РѕРіРѕ С‡РµС‚С‹СЂС‘С…СѓРіРѕР»СЊРЅРёРєР°.
             xc=0.25*(x1+x2+x3+x4);
 	        yc=0.25*(y1+y2+y3+y4);
 			
@@ -1899,18 +1899,18 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 			inregblock(lb, b, lbt, bt, lbsec, bsec, xc, yc,tavg, it);
 			if (it==idsec+lb+lbt) {
 				if (bsec[idsec].inhollow==1) {
-					// не hollow блок.
+					// РЅРµ hollow Р±Р»РѕРє.
 
 					double myeps=0.1*(fmin(fmin(fmin(fabs(x1-xc),fabs(x2-xc)),fmin(fabs(x3-xc),fabs(x4-xc))),fmin(fmin(fabs(y1-yc),fabs(y2-yc)),fmin(fabs(y3-yc),fabs(y4-yc)))));
 
-					// против часовой стрелки упорядочены.
+					// РїСЂРѕС‚РёРІ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё СѓРїРѕСЂСЏРґРѕС‡РµРЅС‹.
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+j*(inx+1), x1, y1,myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+j*(inx+1), x2, y2,myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+1+(j+1)*(inx+1), x3, y3,myeps);
 			        addvertexnumberreal(unicvertexid, rx, ry, isizeuvid, i+(j+1)*(inx+1), x4, y4,myeps);
 
 					 
-				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1,myeps); // индексация начинается с единицы (это важно)
+				    nvtx[0][ie]=findvertexreal(unicvertexid, rx, ry, isizeuvid, x1,y1,myeps); // РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ РµРґРёРЅРёС†С‹ (СЌС‚Рѕ РІР°Р¶РЅРѕ)
 				    nvtx[1][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x2,y2,myeps);
 				    nvtx[2][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x3,y3,myeps);
 				    nvtx[3][ie]=findvertexreal(unicvertexid, rx, ry,isizeuvid, x4,y4,myeps);
@@ -1928,8 +1928,8 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 	}
 	}
 
-	// заполнение координат узлов:
-	// начало.
+	// Р·Р°РїРѕР»РЅРµРЅРёРµ РєРѕРѕСЂРґРёРЅР°С‚ СѓР·Р»РѕРІ:
+	// РЅР°С‡Р°Р»Рѕ.
 	int ic1=0;
 	for (int i=0; i<isizeuvid; i++) {
 		if (unicvertexid[i]>-1) {
@@ -1944,10 +1944,10 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 		taskdat.x[i]=rx[i+1];
 		taskdat.y[i]=ry[i+1];
 	}
-	// конец.
+	// РєРѕРЅРµС†.
 
-	// заполнение элементов.
-	// начало.
+	// Р·Р°РїРѕР»РЅРµРЅРёРµ СЌР»РµРјРµРЅС‚РѕРІ.
+	// РЅР°С‡Р°Р»Рѕ.
 	taskdat.nelmts=ie-1;
 	taskdat.maxelm=ie-1;
 	taskdat.rho=new Real[ie-1];
@@ -1968,12 +1968,12 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 		taskdat.nvtx[2][i]=nvtx[2][i+1];
 		taskdat.nvtx[3][i]=nvtx[3][i+1];
 	}
-	// конец.
+	// РєРѕРЅРµС†.
 
-	// Грниные условия в области по умолчанию.
-	// начало.
+	// Р“СЂРЅРёРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РІ РѕР±Р»Р°СЃС‚Рё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.
+	// РЅР°С‡Р°Р»Рѕ.
 
-	// Граничные условия по умолчанию.
+	// Р“СЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ.
 	taskdat.constr=new bool*[3];
 	taskdat.potent=new Real*[3];
 	for (int i=0; i<VAR_COUNT; i++) {
@@ -1981,18 +1981,18 @@ void constructtaskdattopelem(MYTASK_DATA &taskdat,
 		taskdat.potent[i]=new Real[ic1];
 	}
 
-	// инициализация. Всюду однородные условия Неймана.
+	// РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ. Р’СЃСЋРґСѓ РѕРґРЅРѕСЂРѕРґРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РќРµР№РјР°РЅР°.
 	for (int i=0; i<VAR_COUNT; i++) {
 		for (int j=0; j<ic1; j++) {
-			taskdat.constr[i][j]=false; // всюду условия Неймана.
+			taskdat.constr[i][j]=false; // РІСЃСЋРґСѓ СѓСЃР»РѕРІРёСЏ РќРµР№РјР°РЅР°.
 			taskdat.potent[i][j]=0.0;
 		}
 	}
 
-	// конец.
+	// РєРѕРЅРµС†.
 
 
-	// Освобождение оперативной памяти.
+	// РћСЃРІРѕР±РѕР¶РґРµРЅРёРµ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё.
 	delete rx;
 	delete ry;
 	delete unicvertexid;
@@ -2031,14 +2031,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		xpos=NULL;
 		ypos=NULL;
 
-		int lb, lbt, lbsec, lbnew; // число блоков, универсальных блоков, число секторов.
-	    // файл был успешно преобразован.
-		readobj(inx, iny, lb, lbt, lbsec, lbnew); // считывание объектов.
+		int lb, lbt, lbsec, lbnew; // С‡РёСЃР»Рѕ Р±Р»РѕРєРѕРІ, СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹С… Р±Р»РѕРєРѕРІ, С‡РёСЃР»Рѕ СЃРµРєС‚РѕСЂРѕРІ.
+	    // С„Р°Р№Р» Р±С‹Р» СѓСЃРїРµС€РЅРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅ.
+		readobj(inx, iny, lb, lbt, lbsec, lbnew); // СЃС‡РёС‚С‹РІР°РЅРёРµ РѕР±СЉРµРєС‚РѕРІ.
 
 		if (lb>0) {
-		   // генерирует позиции узлов для серии прямоугольных блоков.
+		   // РіРµРЅРµСЂРёСЂСѓРµС‚ РїРѕР·РёС†РёРё СѓР·Р»РѕРІ РґР»СЏ СЃРµСЂРёРё РїСЂСЏРјРѕСѓРіРѕР»СЊРЅС‹С… Р±Р»РѕРєРѕРІ.
 		   simplemeshgen(xpos, ypos, inx, iny, lb, b); 
-	       // конструирование прямоугольной сетки.
+	       // РєРѕРЅСЃС‚СЂСѓРёСЂРѕРІР°РЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ СЃРµС‚РєРё.
 		   constructtaskdat(taskdat, xpos, ypos, inx, iny, lb, b, lbt, bt, lbsec, bsec);
 		}
 
